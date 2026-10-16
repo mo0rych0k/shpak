@@ -216,4 +216,4 @@ rm -rf ~/.shpak
 
 ## 📄 License
 
-MIT License. Designed with ❤️ in Ukraine.
+[MIT License](LICENSE). Designed with ❤️ in Ukraine.
