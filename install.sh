@@ -1,17 +1,16 @@
 #!/usr/bin/env bash
 set -e
 
-# Colors
-BLUE='\033[38;5;39m'
-YELLOW='\033[38;5;220m'
 GREEN='\033[0;32m'
 CYAN='\033[0;36m'
+YELLOW='\033[33m'
 BOLD='\033[1m'
+DIM='\033[2m'
+GRAY='\033[90m'
 RESET='\033[0m'
 
-echo -e "${BLUE}${BOLD}╔════════════════════════════════════════════════════════════╗${RESET}"
-echo -e "${BLUE}${BOLD}║              🐦 Installing Shpak (spk) AI Suite             ║${RESET}"
-echo -e "${YELLOW}${BOLD}╚════════════════════════════════════════════════════════════╝${RESET}"
+echo -e "\n${CYAN}${BOLD}🐦 shpak${RESET} ${DIM}· installer${RESET}"
+echo -e "${GRAY}─────────────────────────────────────────────────────────────${RESET}"
 
 BIN_DIR="${HOME}/.local/bin"
 mkdir -p "${BIN_DIR}"
@@ -84,18 +83,18 @@ if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
 fi
 
 echo ""
-echo -e "${GREEN}🎉 Shpak (spk) installed successfully!${RESET}"
-echo -e "${BLUE}────────────────────────────────────────────────────────────${RESET}"
-echo -e "1. Quick AI CLI wrappers with transparent translation:"
-echo -e "   • ${CYAN}agy-spk${RESET} (or ${CYAN}agy-shpak${RESET})     - Antigravity CLI"
-echo -e "   • ${CYAN}claude-spk${RESET} (or ${CYAN}claude-shpak${RESET})  - Claude Code CLI"
-echo -e "   • ${CYAN}codex-spk${RESET} (or ${CYAN}codex-shpak${RESET})   - OpenAI Codex CLI"
-echo -e "   • ${CYAN}cursor-spk${RESET} (or ${CYAN}cursor-shpak${RESET})  - Cursor Agent CLI"
+echo -e "${GREEN}✔ Shpak (spk) installed successfully!${RESET}"
+echo -e "${GRAY}────────────────────────────────────────────────────────────${RESET}"
+echo -e "1. AI CLI wrappers with transparent translation:"
+echo -e "   • ${CYAN}agy-spk${RESET}     - Antigravity CLI"
+echo -e "   • ${CYAN}claude-spk${RESET}  - Claude Code CLI"
+echo -e "   • ${CYAN}codex-spk${RESET}   - OpenAI Codex CLI"
+echo -e "   • ${CYAN}cursor-spk${RESET}  - Cursor Agent CLI"
 echo -e "2. In-session global hotkeys:"
-echo -e "   • ${CYAN}Ctrl+T${RESET} - Direct Prompt: type in your language -> translates to English"
-echo -e "   • ${CYAN}Ctrl+F${RESET} - Markdown Prompt: structures input into professional brief"
-echo -e "   • ${CYAN}Ctrl+R${RESET} - Translate response (100% code and math preservation)"
-echo -e "   • ${CYAN}Ctrl+Y${RESET} - Translate clipboard content"
-echo -e "3. Management & configuration: run ${CYAN}spk${RESET} (or ${CYAN}shpak${RESET})"
-echo -e "4. Test sandbox without accounts: run ${CYAN}agy-spk --demo${RESET} or ${CYAN}spk demo${RESET}"
-echo -e "${YELLOW}────────────────────────────────────────────────────────────${RESET}"
+echo -e "   • ${BOLD}Ctrl+T${RESET} - Direct Prompt (translate to English)"
+echo -e "   • ${BOLD}Ctrl+F${RESET} - Markdown Prompt (structure into technical brief)"
+echo -e "   • ${BOLD}Ctrl+R${RESET} - Translate response (100% code and math preservation)"
+echo -e "   • ${BOLD}Ctrl+Y${RESET} - Translate clipboard content"
+echo -e "3. Configuration: run ${CYAN}spk${RESET}"
+echo -e "4. Demo sandbox: run ${CYAN}agy-spk --demo${RESET} or ${CYAN}spk demo${RESET}"
+echo -e "${GRAY}────────────────────────────────────────────────────────────${RESET}\n"

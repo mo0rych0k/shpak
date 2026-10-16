@@ -1,14 +1,14 @@
 #!/usr/bin/env bash
 
-# Colors
-BLUE='\033[38;5;39m'
-YELLOW='\033[38;5;220m'
 GREEN='\033[0;32m'
+CYAN='\033[0;36m'
+BOLD='\033[1m'
+DIM='\033[2m'
+GRAY='\033[90m'
 RESET='\033[0m'
 
-echo -e "${BLUE}╔════════════════════════════════════════════════════════════╗${RESET}"
-echo -e "${BLUE}║              🗑️  Uninstalling Shpak (spk) AI Suite          ║${RESET}"
-echo -e "${YELLOW}╚════════════════════════════════════════════════════════════╝${RESET}"
+echo -e "\n${CYAN}${BOLD}🐦 shpak${RESET} ${DIM}· uninstaller${RESET}"
+echo -e "${GRAY}─────────────────────────────────────────────────────────────${RESET}"
 
 # 1. Remove LaunchAgent service if left behind
 PLIST="${HOME}/Library/LaunchAgents/com.llm-translate.proxy.plist"

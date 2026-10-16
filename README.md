@@ -59,17 +59,16 @@ cd shpak
 On first launch, Shpak presents an interactive setup asking for your primary native language for AI responses:
 
 ```text
-╔═══════════════════════════════════════════════════════════════╗
-║                   🐦 Welcome to Shpak (spk)!                 ║
-╚═══════════════════════════════════════════════════════════════╝
-Please select your primary native language for AI agent responses:
+🐦 shpak initial setup
+─────────────────────────────────────────────────────────────
+Configure target translation languages for AI coding assistants:
 
-  [1] UK   - Ukrainian
-  [2] ES   - Spanish
-  [3] DE   - German
-  [4] FR   - French
-  [5] PL   - Polish
-  ...
+[1/2] Target Response Language (AI Agent ➔ You):
+  [1] UK  Ukrainian (default)    [2] PL  Polish
+  [3] DE  German                 [4] ES  Spanish
+  [5] FR  French                 [6] IT  Italian
+  [7] JA  Japanese               [8] EN  English
+  [C] Custom ISO code (e.g. nl, tr, cs, pt)
 ```
 
 You can change this anytime with `spk config --lang <code>` or inside the interactive menu (`spk`).

@@ -9,7 +9,6 @@ from .config import (
     get_prompt_template,
     detect_installed_agents,
     ensure_onboarding,
-    print_spk_logo,
     DEFAULT_PROMPT_TEMPLATE,
     DEFAULT_FORMATTED_PROMPT_TEMPLATE,
     DEFAULT_RESPONSE_TEMPLATE
@@ -17,14 +16,14 @@ from .config import (
 from .translator.factory import create_translator
 from .translator.base import get_language_name
 
-BLUE_LINE = "\033[38;5;39m\033[1m"
-YELLOW_LINE = "\033[38;5;220m\033[1m"
 RESET = "\033[0m"
 BOLD = "\033[1m"
-GREEN = "\033[32m"
-RED = "\033[31m"
+DIM = "\033[2m"
 CYAN = "\033[36m"
+GREEN = "\033[32m"
 YELLOW = "\033[33m"
+RED = "\033[31m"
+GRAY = "\033[90m"
 
 def cmd_status():
     cfg = ensure_onboarding(load_config())
@@ -47,36 +46,40 @@ def cmd_status():
     copy_clip = cfg.get("copy_to_clipboard", False)
     clip_status = f"{GREEN}ON{RESET}" if copy_clip else f"{RED}OFF{RESET}"
 
-    print_spk_logo()
-    print()
-    print(f"{BLUE_LINE}═══════════════════════════════════════════════════════{RESET}")
-    print("               🐦 Shpak CLI Status & Config            ")
-    print(f"{BLUE_LINE}───────────────────────────────────────────────────────{RESET}")
-    print(f"Active Backend      : {YELLOW}{BOLD}{provider}{RESET}")
-    print(f"Model Selection     : {CYAN}{BOLD}{model}{RESET}")
-    print(f"Response Language   : {GREEN}{BOLD}{target_resp.upper()}{RESET} ({get_language_name(target_resp)}) [AI Agent -> You]")
-    print(f"Prompt Language     : {CYAN}{BOLD}{target_prompt.upper()}{RESET} ({get_language_name(target_prompt)}) [You -> AI Agent]")
-    print(f"Clipboard Auto-Copy : {clip_status}")
-    print(f"Wrapper Hotkeys     : Prompt: {hk_p} | Markdown: {hk_f} | Response: {hk_r} | Clipboard: {hk_c}")
-    print(f"Prompt Templates    : 1 Direct, 1 Formatted (Markdown), 1 Response")
-    print(f"Backend Description : {prov_desc}")
-    print("───────────────────────────────────────────────────────")
-    print("Detected AI Coding Assistants:")
+    GRAY = "\033[90m"
+    DIM = "\033[2m"
+
+    version = cfg.get("version", "3.0.0")
+    print(f"\n{CYAN}{BOLD}shpak{RESET} {DIM}v{version} · developer ai translation suite{RESET}")
+    print(f"{GRAY}───────────────────────────────────────────────────────────────────{RESET}")
+
+    print(f"{BOLD}Translation Engine:{RESET}")
+    print(f"  {DIM}Provider  :{RESET} {BOLD}{provider}{RESET} {DIM}({prov_desc}){RESET}")
+    print(f"  {DIM}Model     :{RESET} {BOLD}{model}{RESET}")
+    print(f"  {DIM}Language  :{RESET} Reply ➔ {BOLD}{target_resp.upper()}{RESET} {DIM}({get_language_name(target_resp)}){RESET}  │  Prompt ➔ {BOLD}{target_prompt.upper()}{RESET} {DIM}({get_language_name(target_prompt)}){RESET}")
+    print(f"  {DIM}Auto-Copy :{RESET} {clip_status}")
+
+    print(f"\n{BOLD}Wrapper Hotkeys:{RESET}")
+    print(f"  {DIM}Prompt (Direct)    :{RESET} {BOLD}{hk_p}{RESET}")
+    print(f"  {DIM}Prompt (Markdown)  :{RESET} {BOLD}{hk_f}{RESET}")
+    print(f"  {DIM}Agent Response     :{RESET} {BOLD}{hk_r}{RESET}")
+    print(f"  {DIM}Clipboard Translate:{RESET} {BOLD}{hk_c}{RESET}")
+
+    print(f"\n{BOLD}AI Coding Assistants:{RESET}")
     agents = detect_installed_agents()
     for key, info in agents.items():
         if info["installed"]:
-            status = f"{GREEN}✔ INSTALLED{RESET} ({info['path']})"
+            status = f"{GREEN}✔ installed{RESET} {GRAY}({info['path']}){RESET}"
         else:
-            status = f"{RED}✖ Not found in PATH{RESET}"
-        test_badge = f" {GREEN}[TESTED STABLE]{RESET}" if key == "agy" else f" {YELLOW}[EXPERIMENTAL]{RESET}"
-        print(f"  • {info['name']:<19} [{info['shpak_cmd']:<10}] : {status}{test_badge}")
-    print(f"  {YELLOW}ℹ️  Tested & verified on Google Antigravity. Other wrappers are in testing.{RESET}")
-    print("───────────────────────────────────────────────────────")
-    print("Available CLI Providers (Zero API keys needed!):")
+            status = f"{GRAY}✖ not found in PATH{RESET}"
+        badge = f"{GREEN}[stable]{RESET}" if key == "agy" else f"{GRAY}[experimental]{RESET}"
+        print(f"  • {BOLD}{info['name']:<18}{RESET} {DIM}{info['shpak_cmd']:<12}{RESET} {status} {badge}")
+
+    print(f"\n{BOLD}Available CLI Providers:{RESET}")
     for name, details in cfg.get("providers", {}).items():
-        is_active = f" {GREEN}(ACTIVE){RESET}" if name == provider else ""
-        print(f"  • {name:<12}{is_active} : {details.get('description', '')}")
-    print(f"{YELLOW_LINE}═══════════════════════════════════════════════════════{RESET}")
+        is_active = f" {GREEN}● active{RESET}" if name == provider else f" {GRAY}○{RESET}       "
+        print(f"  {is_active} {BOLD}{name:<12}{RESET} {DIM}{details.get('description', '')}{RESET}")
+    print(f"{GRAY}───────────────────────────────────────────────────────────────────{RESET}\n")
 
 def cmd_hotkeys(args: list = None):
     cfg = load_config()
@@ -126,21 +129,17 @@ def cmd_hotkeys(args: list = None):
         return
 
     hk = cfg.get("hotkeys", {})
-    print("═══════════════════════════════════════════════════════")
-    print("              ⌨️  Wrapper Hotkey Bindings             ")
-    print("═══════════════════════════════════════════════════════")
-    print(f"  Direct Prompt (EN)      : {hk.get('translate_prompt', 'ctrl+t').upper()}")
-    print(f"  Formatted Markdown (EN) : {hk.get('translate_prompt_formatted', 'ctrl+f').upper()}")
-    print(f"  Response (UK)           : {hk.get('translate_response', 'ctrl+r').upper()}")
-    print(f"  Clipboard (EN)          : {hk.get('translate_clipboard', 'ctrl+y').upper()}")
-    print("───────────────────────────────────────────────────────")
-    print("To change hotkeys:")
-    print("  spk hotkeys --prompt ctrl+p")
-    print("  spk hotkeys --formatted ctrl+g")
-    print("  spk hotkeys --response ctrl+u")
-    print("  spk hotkeys --clipboard ctrl+k")
-    print("  spk hotkeys --reset")
-    print("═══════════════════════════════════════════════════════")
+    print(f"\n{CYAN}{BOLD}shpak{RESET} {DIM}· Terminal Hotkeys{RESET}")
+    print(f"{GRAY}───────────────────────────────────────────────────────────────────{RESET}")
+    print(f"  {DIM}Direct Prompt (You ➔ Agent)   :{RESET} {BOLD}{hk.get('translate_prompt', 'ctrl+t').upper()}{RESET}")
+    print(f"  {DIM}Formatted Markdown Prompt      :{RESET} {BOLD}{hk.get('translate_prompt_formatted', 'ctrl+f').upper()}{RESET}")
+    print(f"  {DIM}Agent Response (Agent ➔ You)  :{RESET} {BOLD}{hk.get('translate_response', 'ctrl+r').upper()}{RESET}")
+    print(f"  {DIM}Clipboard Translation          :{RESET} {BOLD}{hk.get('translate_clipboard', 'ctrl+y').upper()}{RESET}")
+    print(f"{GRAY}───────────────────────────────────────────────────────────────────{RESET}")
+    print(f"{DIM}Commands:{RESET}")
+    print("  spk hotkeys --prompt <key>      spk hotkeys --response <key>")
+    print("  spk hotkeys --formatted <key>   spk hotkeys --clipboard <key>")
+    print("  spk hotkeys --reset\n")
 
 def cmd_rules(args: list = None):
     cfg = load_config()
@@ -178,18 +177,14 @@ def cmd_rules(args: list = None):
         return
 
     prompt_content = get_prompt_template(cfg, mode=mode)
-    print("═══════════════════════════════════════════════════════")
-    print(f"      📝 Active 1-Prompt Rules for Mode: [{mode.upper()}]      ")
-    print("═══════════════════════════════════════════════════════")
+    print(f"\n{CYAN}{BOLD}shpak{RESET} {DIM}· Active Rules for [{mode.upper()}]{RESET}")
+    print(f"{GRAY}───────────────────────────────────────────────────────────────────{RESET}")
     print(prompt_content)
-    print("───────────────────────────────────────────────────────")
-    print("Options:")
-    print(f"  spk rules --{mode} --edit     : Edit this prompt in $EDITOR")
-    print(f"  spk rules --{mode} --reset    : Reset this prompt to defaults")
-    print("  spk rules --prompt           : View direct user prompt template")
-    print("  spk rules --formatted        : View formatted Markdown prompt template")
-    print("  spk rules --response         : View agent response template")
-    print("═══════════════════════════════════════════════════════")
+    print(f"{GRAY}───────────────────────────────────────────────────────────────────{RESET}")
+    print(f"{DIM}Commands:{RESET}")
+    print(f"  spk rules --{mode} --edit     : Edit in $EDITOR")
+    print(f"  spk rules --{mode} --reset    : Reset to default")
+    print(f"  spk rules --prompt | --formatted | --response\n")
 
 def cmd_config(provider: str = None, model: str = None, response_lang: str = None, prompt_lang: str = None, clipboard: str = None):
     cfg = load_config()
@@ -344,33 +339,28 @@ def cmd_last():
             except Exception:
                 pass
 
-        print(f"\n{BLUE_LINE}═══════════════════════════════════════════════════════{RESET}")
-        print(f"         🌐 Translated Agent Response ({target_resp.upper()})")
-        print(f"{BLUE_LINE}───────────────────────────────────────────────────────{RESET}\n")
+        print(f"\n{CYAN}{BOLD}shpak{RESET} {DIM}· Translated Agent Response ({target_resp.upper()}):{RESET}")
+        print(f"{GRAY}───────────────────────────────────────────────────────────────────{RESET}\n")
         print(render_markdown(translated, is_raw_term=False))
-        print(f"\n{YELLOW_LINE}───────────────────────────────────────────────────────{RESET}")
-        print("📋 Copied to clipboard!")
-        print(f"{YELLOW_LINE}═══════════════════════════════════════════════════════{RESET}")
+        print(f"\n{GRAY}───────────────────────────────────────────────────────────────────{RESET}")
+        print(f"{GREEN}✔ Copied to clipboard{RESET}\n")
     except Exception as e:
         print(f"❌ Translation error: {e}")
 
 def cmd_agents():
     """Displays installed and supported AI coding assistants."""
     agents = detect_installed_agents()
-    print(f"\n{BLUE_LINE}═══════════════════════════════════════════════════════════════════════{RESET}")
-    print("                 🤖 Supported AI Coding Assistants           ")
-    print(f"{BLUE_LINE}───────────────────────────────────────────────────────────────────────{RESET}")
+    print(f"\n{CYAN}{BOLD}shpak{RESET} {DIM}· Supported AI Coding Assistants{RESET}")
+    print(f"{GRAY}───────────────────────────────────────────────────────────────────{RESET}")
     for key, info in agents.items():
         if info["installed"]:
-            status = f"{GREEN}✔ INSTALLED{RESET} ({info['path']})"
+            status = f"{GREEN}✔ installed{RESET} {GRAY}({info['path']}){RESET}"
         else:
-            status = f"{RED}✖ Not found in PATH{RESET}"
-        test_badge = f"{GREEN}[TESTED STABLE]{RESET}" if key == "agy" else f"{YELLOW}[EXPERIMENTAL / UNTESTED]{RESET}"
-        print(f"  • {info['name']:<19} [{info['shpak_cmd']:<10}] : {status} {test_badge}")
-    print("───────────────────────────────────────────────────────────────────────")
-    print(f"  {YELLOW}⚠️  Note: Shpak is actively tested & verified on Google Antigravity.{RESET}")
-    print(f"     Other wrappers (claude, codex, cursor, aider) are experimental.")
-    print(f"{YELLOW_LINE}═══════════════════════════════════════════════════════════════════════{RESET}\n")
+            status = f"{GRAY}✖ not found in PATH{RESET}"
+        badge = f"{GREEN}[stable]{RESET}" if key == "agy" else f"{GRAY}[experimental]{RESET}"
+        print(f"  • {BOLD}{info['name']:<18}{RESET} {DIM}{info['shpak_cmd']:<12}{RESET} {status} {badge}")
+    print(f"{GRAY}───────────────────────────────────────────────────────────────────{RESET}")
+    print(f"  {DIM}Note: Verified on Google Antigravity. Other CLI wrappers are experimental.{RESET}\n")
 
 def cmd_install():
     """Symlinks binaries into ~/.local/bin and verifies PATH."""

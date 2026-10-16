@@ -246,21 +246,15 @@ def ensure_onboarding(cfg: dict, interactive: bool = True) -> dict:
         cfg["onboarding_complete"] = True
         return cfg
 
-    BOLD = "\033[1m"
-    GREEN = "\033[32m"
     CYAN = "\033[36m"
+    BOLD = "\033[1m"
     DIM = "\033[2m"
+    GREEN = "\033[32m"
+    RESET = "\033[0m"
 
-    print()
-    print_spk_logo()
-    print()
-    print(f"{BLUE_COLOR}╔═══════════════════════════════════════════════════════════════╗{RESET}")
-    print(f"{BLUE_COLOR}║                   🐦 Welcome to Shpak (spk)!                 ║{RESET}")
-    print(f"{BLUE_COLOR}║     Transparent PTY Companion for AI Coding Assistants       ║{RESET}")
-    print(f"{YELLOW_COLOR}╚═══════════════════════════════════════════════════════════════╝{RESET}")
-    print(f"\n{BOLD}Quick Setup: Configure your two translation targets:{RESET}")
-    print(f"  1. {GREEN}Response Language{RESET} : AI Agent -> You (e.g. Ukrainian, Polish, German)")
-    print(f"  2. {CYAN}Prompt Language{RESET}   : You -> AI Agent (e.g. English, French, Japanese)\n")
+    print(f"\n{CYAN}{BOLD}🐦 shpak initial setup{RESET}")
+    print(f"{DIM}─────────────────────────────────────────────────────────────{RESET}")
+    print(f"Configure target translation languages for AI coding assistants:\n")
 
     popular_resp = [
         ("uk", "Ukrainian"),
@@ -270,8 +264,6 @@ def ensure_onboarding(cfg: dict, interactive: bool = True) -> dict:
         ("fr", "French"),
         ("it", "Italian"),
         ("ja", "Japanese"),
-        ("zh", "Chinese"),
-        ("pt", "Portuguese"),
         ("en", "English"),
     ]
 
@@ -290,16 +282,23 @@ def ensure_onboarding(cfg: dict, interactive: bool = True) -> dict:
     selected_prompt = "en"
 
     try:
-        # Step 1: Response Language
-        print(f"{BOLD}[1/2] Select Target Response Language (AI Agent -> You):{RESET}")
-        for idx, (code, name) in enumerate(popular_resp, 1):
-            def_mark = f" {GREEN}(Default){RESET}" if code == "uk" else ""
-            print(f"  [{BOLD}{idx}{RESET}] {code.upper():<4} - {name}{def_mark}")
-        print(f"  [{BOLD}C{RESET}] Other (Enter custom ISO code)")
+        # Step 1: Response Language (Agent -> You)
+        print(f"{BOLD}[1/2] Target Response Language (AI Agent ➔ You):{RESET}")
+        for i in range(0, len(popular_resp), 2):
+            c1, n1 = popular_resp[i]
+            d1 = f" {GREEN}(default){RESET}" if c1 == "uk" else ""
+            item1 = f"[{BOLD}{i+1}{RESET}] {c1.upper()}  {n1:<10}{d1}"
+            if i + 1 < len(popular_resp):
+                c2, n2 = popular_resp[i+1]
+                item2 = f"[{BOLD}{i+2}{RESET}] {c2.upper()}  {n2:<10}"
+                print(f"  {item1:<32} {item2}")
+            else:
+                print(f"  {item1}")
+        print(f"  [{BOLD}C{RESET}] Custom ISO code (e.g. nl, tr, cs, pt)")
 
-        choice_r = input(f"\n{BOLD}Choice [1-{len(popular_resp)}, C, or Enter for Ukrainian]: {RESET}").strip()
+        choice_r = input(f"\n{BOLD}Select [1-{len(popular_resp)}, C, or Enter for Ukrainian]: {RESET}").strip()
         if choice_r.upper() == "C":
-            custom = input(f"{BOLD}Enter 2-letter ISO language code (e.g. nl, tr, cs, sv): {RESET}").strip().lower()
+            custom = input(f"{BOLD}Enter 2-letter ISO code: {RESET}").strip().lower()
             selected_resp = custom if custom else "uk"
         elif choice_r:
             try:
@@ -311,16 +310,23 @@ def ensure_onboarding(cfg: dict, interactive: bool = True) -> dict:
             except ValueError:
                 selected_resp = choice_r.lower() if len(choice_r) <= 4 else "uk"
 
-        # Step 2: Prompt Language
-        print(f"\n{BOLD}[2/2] Select Target Prompt Language (You -> AI Agent):{RESET}")
-        for idx, (code, name) in enumerate(popular_prompt, 1):
-            def_mark = f" {GREEN}(Default){RESET}" if code == "en" else ""
-            print(f"  [{BOLD}{idx}{RESET}] {code.upper():<4} - {name}{def_mark}")
-        print(f"  [{BOLD}C{RESET}] Other (Enter custom ISO code)")
+        # Step 2: Prompt Language (You -> Agent)
+        print(f"\n{BOLD}[2/2] Target Prompt Language (You ➔ AI Agent):{RESET}")
+        for i in range(0, len(popular_prompt), 2):
+            c1, n1 = popular_prompt[i]
+            d1 = f" {GREEN}(default){RESET}" if c1 == "en" else ""
+            item1 = f"[{BOLD}{i+1}{RESET}] {c1.upper()}  {n1:<10}{d1}"
+            if i + 1 < len(popular_prompt):
+                c2, n2 = popular_prompt[i+1]
+                item2 = f"[{BOLD}{i+2}{RESET}] {c2.upper()}  {n2:<10}"
+                print(f"  {item1:<32} {item2}")
+            else:
+                print(f"  {item1}")
+        print(f"  [{BOLD}C{RESET}] Custom ISO code")
 
-        choice_p = input(f"\n{BOLD}Choice [1-{len(popular_prompt)}, C, or Enter for English]: {RESET}").strip()
+        choice_p = input(f"\n{BOLD}Select [1-{len(popular_prompt)}, C, or Enter for English]: {RESET}").strip()
         if choice_p.upper() == "C":
-            custom = input(f"{BOLD}Enter 2-letter ISO language code: {RESET}").strip().lower()
+            custom = input(f"{BOLD}Enter 2-letter ISO code: {RESET}").strip().lower()
             selected_prompt = custom if custom else "en"
         elif choice_p:
             try:
@@ -337,10 +343,7 @@ def ensure_onboarding(cfg: dict, interactive: bool = True) -> dict:
         cfg["onboarding_complete"] = True
         save_config(cfg)
 
-        print(f"\n{GREEN}✔ Setup complete!{RESET}")
-        print(f"  • AI Agent Response -> {BOLD}{selected_resp.upper()}{RESET}")
-        print(f"  • Developer Prompt  -> {BOLD}{selected_prompt.upper()}{RESET}")
-        print(f"{DIM}(You can reconfigure anytime via 'spk' menu or 'spk config'){RESET}\n")
+        print(f"\n{GREEN}✔ Configured:{RESET} Reply ➔ {BOLD}{selected_resp.upper()}{RESET} · Prompt ➔ {BOLD}{selected_prompt.upper()}{RESET}\n")
     except (KeyboardInterrupt, EOFError):
         cfg.setdefault("languages", {})["target_response"] = "uk"
         cfg.setdefault("languages", {})["target_prompt"] = "en"
