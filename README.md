@@ -262,6 +262,16 @@ rm -rf ~/.shpak
 
 ---
 
+## ⚖️ Disclaimer & Provider Compliance
+
+> [!IMPORTANT]
+> **Independent Open-Source Utility**: Shpak is an independent open-source project and is not affiliated, associated, authorized, endorsed by, or in any way officially connected with Google LLC, Anthropic PBC, OpenAI, or any of their subsidiaries or affiliates.
+>
+> * **User Responsibility**: Users are solely and personally responsible for complying with the Terms of Service, Acceptable Use Policies, usage limits, and developer agreements of whichever AI service providers or CLI tools (e.g. `agy`, `claude`, `codex`, `cursor`) they choose to operate through Shpak.
+> * **Zero Access to Tokens & Secrets**: Shpak operates 100% locally on your machine. It **never** accesses, inspects, extracts, stores, or transmits your API keys, OAuth tokens, session cookies, auth files, or credentials. All authentication is handled strictly and directly by the official provider CLI binaries installed on your system.
+
+---
+
 ## 📄 License
 
 [MIT License](LICENSE). Designed with ❤️ in Ukraine.
