@@ -9,7 +9,7 @@
     "target_response": "uk",
     "target_prompt": "en"
   },
-  "copy_to_clipboard": true,
+  "copy_to_clipboard": false,
   "hotkeys": {
     "translate_prompt": "ctrl+t",
     "translate_prompt_formatted": "ctrl+f",

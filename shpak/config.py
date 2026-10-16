@@ -58,7 +58,7 @@ DEFAULT_CONFIG = {
         "target_response": "uk",
         "target_prompt": "en"
     },
-    "copy_to_clipboard": True,
+    "copy_to_clipboard": False,
     "hotkeys": {
         "translate_prompt": "ctrl+t",
         "translate_prompt_formatted": "ctrl+f",
@@ -218,32 +218,56 @@ def detect_installed_agents() -> dict:
 
     return agents
 
+
+BLUE_COLOR = "\033[38;5;39m\033[1m"
+YELLOW_COLOR = "\033[38;5;220m\033[1m"
+RESET = "\033[0m"
+
+SPK_LOGO_LINES = [
+    (BLUE_COLOR,   "        ▄▄██████▄▄                                        "),
+    (BLUE_COLOR,   "       ▄████████████▄          ▄██████  ██████╗  ██╗  ██╗"),
+    (BLUE_COLOR,   "      ███████▀▀███████        ███╔════╝ ██╔══██╗ ██║ ██╔╝"),
+    (BLUE_COLOR,   "     ██████▀    ▀██████" + YELLOW_COLOR + "►" + BLUE_COLOR + "      ███████╗  ██████╔╝ █████═╝ "),
+    (YELLOW_COLOR, "     ██████      ██████       ╚════███╗ ██╔═══╝  ██╔═██╗ "),
+    (YELLOW_COLOR, "      ██████▄▄▄██████▀        ███████╔╝ ██║      ██║  ██╗"),
+    (YELLOW_COLOR, "       ▀████████████▀         ╚══════╝  ╚═╝      ╚═╝  ╚═╝"),
+    (YELLOW_COLOR, "         ▀▀██████▀▀                                       "),
+]
+
+def print_spk_logo():
+    for col, line in SPK_LOGO_LINES:
+        print(f"{col}{line}{RESET}")
+
 def ensure_onboarding(cfg: dict, interactive: bool = True) -> dict:
-    """Prompts the user to select their native target language on the very first run."""
+    """Guides the user through initial language selection on the very first run."""
     if cfg.get("onboarding_complete", False):
         return cfg
     if not interactive or not sys.stdin.isatty():
         cfg["onboarding_complete"] = True
         return cfg
 
-    # Ukrainian top blue, bottom yellow borders
-    BLUE = "\033[38;5;39m\033[1m"
-    YELLOW = "\033[38;5;220m\033[1m"
-    RESET = "\033[0m"
     BOLD = "\033[1m"
     GREEN = "\033[32m"
+    CYAN = "\033[36m"
+    DIM = "\033[2m"
 
-    print(f"\n{BLUE}╔═══════════════════════════════════════════════════════════════╗{RESET}")
-    print(f"{BLUE}║                   🐦 Welcome to Shpak (spk)!                 ║{RESET}")
-    print(f"{YELLOW}╚═══════════════════════════════════════════════════════════════╝{RESET}")
-    print(f"{BOLD}Please select your primary native language for AI agent responses:{RESET}\n")
+    print()
+    print_spk_logo()
+    print()
+    print(f"{BLUE_COLOR}╔═══════════════════════════════════════════════════════════════╗{RESET}")
+    print(f"{BLUE_COLOR}║                   🐦 Welcome to Shpak (spk)!                 ║{RESET}")
+    print(f"{BLUE_COLOR}║     Transparent PTY Companion for AI Coding Assistants       ║{RESET}")
+    print(f"{YELLOW_COLOR}╚═══════════════════════════════════════════════════════════════╝{RESET}")
+    print(f"\n{BOLD}Quick Setup: Configure your two translation targets:{RESET}")
+    print(f"  1. {GREEN}Response Language{RESET} : AI Agent -> You (e.g. Ukrainian, Polish, German)")
+    print(f"  2. {CYAN}Prompt Language{RESET}   : You -> AI Agent (e.g. English, French, Japanese)\n")
 
-    popular = [
+    popular_resp = [
         ("uk", "Ukrainian"),
-        ("es", "Spanish"),
-        ("de", "German"),
-        ("fr", "French"),
         ("pl", "Polish"),
+        ("de", "German"),
+        ("es", "Spanish"),
+        ("fr", "French"),
         ("it", "Italian"),
         ("ja", "Japanese"),
         ("zh", "Chinese"),
@@ -251,33 +275,75 @@ def ensure_onboarding(cfg: dict, interactive: bool = True) -> dict:
         ("en", "English"),
     ]
 
-    for idx, (code, name) in enumerate(popular, 1):
-        def_mark = f" {GREEN}(Default){RESET}" if code == "uk" else ""
-        print(f"  [{BOLD}{idx}{RESET}] {code.upper():<4} - {name}{def_mark}")
-    print(f"  [{BOLD}C{RESET}] Other (Enter custom ISO code)\n")
+    popular_prompt = [
+        ("en", "English"),
+        ("uk", "Ukrainian"),
+        ("de", "German"),
+        ("es", "Spanish"),
+        ("fr", "French"),
+        ("ja", "Japanese"),
+        ("zh", "Chinese"),
+        ("pl", "Polish"),
+    ]
+
+    selected_resp = "uk"
+    selected_prompt = "en"
 
     try:
-        choice = input(f"{BOLD}Select language [1-{len(popular)} or Press Enter for Ukrainian]: {RESET}").strip()
-        if not choice:
-            selected_code = "uk"
-        elif choice.upper() == "C":
-            custom_code = input(f"{BOLD}Enter 2-letter ISO language code (e.g. nl, tr, cs): {RESET}").strip().lower()
-            selected_code = custom_code if custom_code else "uk"
-        else:
-            try:
-                num = int(choice)
-                if 1 <= num <= len(popular):
-                    selected_code = popular[num - 1][0]
-                else:
-                    selected_code = "uk"
-            except ValueError:
-                selected_code = choice.lower() if len(choice) <= 4 else "uk"
+        # Step 1: Response Language
+        print(f"{BOLD}[1/2] Select Target Response Language (AI Agent -> You):{RESET}")
+        for idx, (code, name) in enumerate(popular_resp, 1):
+            def_mark = f" {GREEN}(Default){RESET}" if code == "uk" else ""
+            print(f"  [{BOLD}{idx}{RESET}] {code.upper():<4} - {name}{def_mark}")
+        print(f"  [{BOLD}C{RESET}] Other (Enter custom ISO code)")
 
-        cfg.setdefault("languages", {})["target_response"] = selected_code
+        choice_r = input(f"\n{BOLD}Choice [1-{len(popular_resp)}, C, or Enter for Ukrainian]: {RESET}").strip()
+        if choice_r.upper() == "C":
+            custom = input(f"{BOLD}Enter 2-letter ISO language code (e.g. nl, tr, cs, sv): {RESET}").strip().lower()
+            selected_resp = custom if custom else "uk"
+        elif choice_r:
+            try:
+                num = int(choice_r)
+                if 1 <= num <= len(popular_resp):
+                    selected_resp = popular_resp[num - 1][0]
+                else:
+                    selected_resp = "uk"
+            except ValueError:
+                selected_resp = choice_r.lower() if len(choice_r) <= 4 else "uk"
+
+        # Step 2: Prompt Language
+        print(f"\n{BOLD}[2/2] Select Target Prompt Language (You -> AI Agent):{RESET}")
+        for idx, (code, name) in enumerate(popular_prompt, 1):
+            def_mark = f" {GREEN}(Default){RESET}" if code == "en" else ""
+            print(f"  [{BOLD}{idx}{RESET}] {code.upper():<4} - {name}{def_mark}")
+        print(f"  [{BOLD}C{RESET}] Other (Enter custom ISO code)")
+
+        choice_p = input(f"\n{BOLD}Choice [1-{len(popular_prompt)}, C, or Enter for English]: {RESET}").strip()
+        if choice_p.upper() == "C":
+            custom = input(f"{BOLD}Enter 2-letter ISO language code: {RESET}").strip().lower()
+            selected_prompt = custom if custom else "en"
+        elif choice_p:
+            try:
+                num = int(choice_p)
+                if 1 <= num <= len(popular_prompt):
+                    selected_prompt = popular_prompt[num - 1][0]
+                else:
+                    selected_prompt = "en"
+            except ValueError:
+                selected_prompt = choice_p.lower() if len(choice_p) <= 4 else "en"
+
+        cfg.setdefault("languages", {})["target_response"] = selected_resp
+        cfg["languages"]["target_prompt"] = selected_prompt
         cfg["onboarding_complete"] = True
         save_config(cfg)
-        print(f"\n{GREEN}✔ Target language set to: {selected_code.upper()}! (You can change it anytime via 'spk config --lang <code>'){RESET}\n")
+
+        print(f"\n{GREEN}✔ Setup complete!{RESET}")
+        print(f"  • AI Agent Response -> {BOLD}{selected_resp.upper()}{RESET}")
+        print(f"  • Developer Prompt  -> {BOLD}{selected_prompt.upper()}{RESET}")
+        print(f"{DIM}(You can reconfigure anytime via 'spk' menu or 'spk config'){RESET}\n")
     except (KeyboardInterrupt, EOFError):
+        cfg.setdefault("languages", {})["target_response"] = "uk"
+        cfg.setdefault("languages", {})["target_prompt"] = "en"
         cfg["onboarding_complete"] = True
         save_config(cfg)
 

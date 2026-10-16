@@ -8,6 +8,7 @@ from .config import (
     load_config,
     save_config,
     detect_installed_agents,
+    print_spk_logo,
     DEFAULT_PROMPT_TEMPLATE,
     DEFAULT_FORMATTED_PROMPT_TEMPLATE,
     DEFAULT_RESPONSE_TEMPLATE
@@ -33,27 +34,27 @@ def clear_screen():
 
 def print_header(cfg: dict):
     clear_screen()
+    print_spk_logo()
+    print()
     active = cfg.get("active_translator", {})
     provider = active.get("provider", "agy-cli")
     model = active.get("model", "auto")
     lang_cfg = cfg.get("languages", {})
     target_resp = lang_cfg.get("target_response", "uk")
+    target_prompt = lang_cfg.get("target_prompt", "en")
     hotkeys = cfg.get("hotkeys", {})
     hk_p = hotkeys.get("translate_prompt", "ctrl+t").upper()
     hk_f = hotkeys.get("translate_prompt_formatted", "ctrl+f").upper()
     hk_r = hotkeys.get("translate_response", "ctrl+r").upper()
     hk_c = hotkeys.get("translate_clipboard", "ctrl+y").upper()
 
-    copy_clip = cfg.get("copy_to_clipboard", True)
+    copy_clip = cfg.get("copy_to_clipboard", False)
     clip_status = f"{GREEN}ON{RESET}" if copy_clip else f"{RED}OFF{RESET}"
 
-    print(f"{BLUE_LINE}╔═════════════════════════════════════════════════════════════════════════════╗{RESET}")
-    print(f"{BLUE_LINE}║                      🐦  SHPAK CONTROL PANEL (ZERO KEYS)                    ║{RESET}")
-    print(f"{YELLOW_LINE}╚═════════════════════════════════════════════════════════════════════════════╝{RESET}")
-    print(f"  Provider : {BOLD}{YELLOW}{provider}{RESET}  |  Model: {BOLD}{CYAN}{model}{RESET}  |  Copy to Clipboard: {BOLD}{clip_status}{RESET}")
-    print(f"  Language : {BOLD}{GREEN}{target_resp.upper()} ({get_language_name(target_resp)}){RESET}")
-    print(f"  Hotkeys  : {BOLD}{WHITE}Prompt: {hk_p}  |  Markdown: {hk_f}  |  Response: {hk_r}  |  Clipboard: {hk_c}{RESET}")
-    print(f"{DIM}─────────────────────────────────────────────────────────────────────────────{RESET}")
+    print(f"  Backend   : {BOLD}{YELLOW}{provider}{RESET}  |  Model: {BOLD}{CYAN}{model}{RESET}  |  Auto-Copy: {BOLD}{clip_status}{RESET}")
+    print(f"  Languages : Response: {BOLD}{GREEN}{target_resp.upper()} ({get_language_name(target_resp)}){RESET}  |  Prompt: {BOLD}{CYAN}{target_prompt.upper()} ({get_language_name(target_prompt)}){RESET}")
+    print(f"  Hotkeys   : {BOLD}{WHITE}Prompt: {hk_p}  |  Markdown: {hk_f}  |  Response: {hk_r}  |  Clipboard: {hk_c}{RESET}")
+    print(f"{YELLOW_LINE}─────────────────────────────────────────────────────────────────────────────{RESET}")
 
 def menu_select_provider(cfg: dict):
     clear_screen()
@@ -126,51 +127,84 @@ def menu_select_model(cfg: dict):
     except ValueError:
         pass
 
-def menu_select_language(cfg: dict):
+def choose_single_language(title: str, current_code: str) -> str:
     clear_screen()
-    print(f"{CYAN}{BOLD}=== 🌍 SELECT TARGET RESPONSE LANGUAGE ==={RESET}\n")
+    print(f"{CYAN}{BOLD}=== 🌍 {title} ==={RESET}\n")
     popular = [
         ("uk", "Ukrainian"),
+        ("en", "English"),
         ("pl", "Polish"),
         ("de", "German"),
         ("es", "Spanish"),
         ("fr", "French"),
         ("it", "Italian"),
         ("ja", "Japanese"),
-        ("en", "English")
+        ("zh", "Chinese"),
+        ("pt", "Portuguese"),
     ]
 
-    current_lang = cfg.get("languages", {}).get("target_response", "uk")
     for idx, (code, name) in enumerate(popular, 1):
-        is_cur = f" {GREEN}(CURRENT){RESET}" if code == current_lang else ""
+        is_cur = f" {GREEN}(CURRENT){RESET}" if code == current_code else ""
         print(f"  [{BOLD}{idx}{RESET}] {code.upper():<4} - {name}{is_cur}")
 
-    print(f"\n  [{BOLD}C{RESET}] Enter another language code (e.g. pt, zh, nl, sv)")
-    print(f"  [{BOLD}0{RESET}] Back to Main Menu")
+    print(f"\n  [{BOLD}C{RESET}] Enter another custom language code (e.g. nl, tr, cs, sv, ko)")
+    print(f"  [{BOLD}0{RESET}] Keep Current ({current_code.upper()})")
 
     choice = input(f"\n{BOLD}Select language: {RESET}").strip()
-    if choice in ("0", "q", "exit"):
-        return
+    if choice in ("0", "q", "exit", ""):
+        return current_code
 
     if choice.upper() == "C":
-        code = input(f"{BOLD}Enter ISO language code: {RESET}").strip().lower()
-        if code:
-            cfg.setdefault("languages", {})["target_response"] = code
-            save_config(cfg)
-            print(f"\n{GREEN}✅ Response language set to '{code.upper()}'{RESET}")
-            time.sleep(1)
-        return
+        custom = input(f"{BOLD}Enter 2-letter ISO language code: {RESET}").strip().lower()
+        return custom if custom else current_code
 
     try:
         idx = int(choice) - 1
         if 0 <= idx < len(popular):
-            code = popular[idx][0]
-            cfg.setdefault("languages", {})["target_response"] = code
-            save_config(cfg)
-            print(f"\n{GREEN}✅ Response language set to '{code.upper()}'{RESET}")
-            time.sleep(1)
+            return popular[idx][0]
     except ValueError:
-        pass
+        if len(choice) <= 4:
+            return choice.lower()
+    return current_code
+
+def menu_select_language(cfg: dict):
+    while True:
+        clear_screen()
+        lang_cfg = cfg.setdefault("languages", {})
+        resp_lang = lang_cfg.get("target_response", "uk")
+        prompt_lang = lang_cfg.get("target_prompt", "en")
+
+        print(f"{CYAN}{BOLD}=== 🌍 CONFIGURE TRANSLATION LANGUAGES ==={RESET}\n")
+        print(f"  Current Settings:")
+        print(f"    • Agent Response (Agent -> You)   : {BOLD}{GREEN}{resp_lang.upper()} ({get_language_name(resp_lang)}){RESET}")
+        print(f"    • Developer Prompt (You -> Agent) : {BOLD}{CYAN}{prompt_lang.upper()} ({get_language_name(prompt_lang)}){RESET}\n")
+        print(f"  [{BOLD}1{RESET}] 🔄 Change Agent Response Language (Agent -> You)")
+        print(f"  [{BOLD}2{RESET}] 🔄 Change Developer Prompt Language (You -> Agent)")
+        print(f"  [{BOLD}3{RESET}] 🔀 Swap Languages ({prompt_lang.upper()} <-> {resp_lang.upper()})")
+        print(f"\n  [{BOLD}0{RESET}] Back to Main Menu")
+
+        choice = input(f"\n{BOLD}Select option: {RESET}").strip()
+        if choice in ("0", "q", "exit"):
+            break
+        elif choice == "1":
+            new_code = choose_single_language("SELECT AGENT RESPONSE LANGUAGE (Agent -> You)", resp_lang)
+            if new_code != resp_lang:
+                cfg["languages"]["target_response"] = new_code
+                save_config(cfg)
+                print(f"\n{GREEN}✅ Response language set to '{new_code.upper()}' ({get_language_name(new_code)}){RESET}")
+                time.sleep(1)
+        elif choice == "2":
+            new_code = choose_single_language("SELECT DEVELOPER PROMPT LANGUAGE (You -> Agent)", prompt_lang)
+            if new_code != prompt_lang:
+                cfg["languages"]["target_prompt"] = new_code
+                save_config(cfg)
+                print(f"\n{GREEN}✅ Prompt language set to '{new_code.upper()}' ({get_language_name(new_code)}){RESET}")
+                time.sleep(1)
+        elif choice == "3":
+            cfg["languages"]["target_response"], cfg["languages"]["target_prompt"] = prompt_lang, resp_lang
+            save_config(cfg)
+            print(f"\n{GREEN}✅ Swapped languages! Response is now {prompt_lang.upper()}, Prompt is {resp_lang.upper()}.{RESET}")
+            time.sleep(1.2)
 
 def menu_hotkeys(cfg: dict):
     while True:
@@ -434,17 +468,20 @@ def run_tui():
         cfg = load_config()
         print_header(cfg)
 
-        copy_clip = cfg.get("copy_to_clipboard", True)
+        copy_clip = cfg.get("copy_to_clipboard", False)
         clip_btn = f"{GREEN}ON{RESET}" if copy_clip else f"{RED}OFF{RESET}"
+        lang_cfg = cfg.get("languages", {})
+        r_code = lang_cfg.get("target_response", "uk").upper()
+        p_code = lang_cfg.get("target_prompt", "en").upper()
 
         print(f"  [{BOLD}1{RESET}] 🤖 Switch Translation Provider {DIM}(agy-cli / claude-cli){RESET}")
         print(f"  [{BOLD}2{RESET}] 🧠 Switch Model {DIM}(gemini-3.8-flash-low, haiku, auto...){RESET}")
-        print(f"  [{BOLD}3{RESET}] 🌍 Change Language {DIM}(Ukrainian, Polish, German...){RESET}")
+        print(f"  [{BOLD}3{RESET}] 🌍 Configure Languages {DIM}(Response: {r_code}, Prompt: {p_code}){RESET}")
         print(f"  [{BOLD}4{RESET}] ⌨️  Configure Hotkeys {DIM}(Ctrl+T, Ctrl+F, Ctrl+R, Ctrl+Y){RESET}")
         print(f"  [{BOLD}5{RESET}] 📝 View & Edit Prompts {DIM}(Direct, Markdown, Response){RESET}")
         print(f"  [{BOLD}6{RESET}] 📋 Auto-Copy Translation to Clipboard: [{clip_btn}]")
         print(f"  [{BOLD}7{RESET}] 🧪 Test Live Translation")
-        print(f"  [{BOLD}8{RESET}] 🚀 Launch AI CLI Wrapper {DIM}(agy-shpak, claude-shpak, codex-shpak...){RESET}")
+        print(f"  [{BOLD}8{RESET}] 🚀 Launch AI CLI Wrapper {DIM}(agy-spk, claude-spk, codex-spk...){RESET}")
         print(f"  [{BOLD}0{RESET}] Exit")
 
         choice = input(f"\n{BOLD}Option [0-8]: {RESET}").strip()

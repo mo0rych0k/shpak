@@ -49,3 +49,4 @@ venv.bak/
 # Local test logs
 *.log
 scratch/
+image.png

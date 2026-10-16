@@ -9,6 +9,7 @@ from .config import (
     get_prompt_template,
     detect_installed_agents,
     ensure_onboarding,
+    print_spk_logo,
     DEFAULT_PROMPT_TEMPLATE,
     DEFAULT_FORMATTED_PROMPT_TEMPLATE,
     DEFAULT_RESPONSE_TEMPLATE
@@ -22,6 +23,8 @@ RESET = "\033[0m"
 BOLD = "\033[1m"
 GREEN = "\033[32m"
 RED = "\033[31m"
+CYAN = "\033[36m"
+YELLOW = "\033[33m"
 
 def cmd_status():
     cfg = ensure_onboarding(load_config())
@@ -41,13 +44,19 @@ def cmd_status():
     hk_r = hotkeys.get("translate_response", "ctrl+r").upper()
     hk_c = hotkeys.get("translate_clipboard", "ctrl+y").upper()
 
+    copy_clip = cfg.get("copy_to_clipboard", False)
+    clip_status = f"{GREEN}ON{RESET}" if copy_clip else f"{RED}OFF{RESET}"
+
+    print_spk_logo()
+    print()
     print(f"{BLUE_LINE}═══════════════════════════════════════════════════════{RESET}")
     print("               🐦 Shpak CLI Status & Config            ")
     print(f"{BLUE_LINE}───────────────────────────────────────────────────────{RESET}")
-    print(f"Active Backend      : {provider}")
-    print(f"Model Selection     : {model}")
-    print(f"Prompt Language     : {target_prompt.upper()} (User input -> English)")
-    print(f"Response Language   : {target_resp.upper()} ({get_language_name(target_resp)})")
+    print(f"Active Backend      : {YELLOW}{BOLD}{provider}{RESET}")
+    print(f"Model Selection     : {CYAN}{BOLD}{model}{RESET}")
+    print(f"Response Language   : {GREEN}{BOLD}{target_resp.upper()}{RESET} ({get_language_name(target_resp)}) [AI Agent -> You]")
+    print(f"Prompt Language     : {CYAN}{BOLD}{target_prompt.upper()}{RESET} ({get_language_name(target_prompt)}) [You -> AI Agent]")
+    print(f"Clipboard Auto-Copy : {clip_status}")
     print(f"Wrapper Hotkeys     : Prompt: {hk_p} | Markdown: {hk_f} | Response: {hk_r} | Clipboard: {hk_c}")
     print(f"Prompt Templates    : 1 Direct, 1 Formatted (Markdown), 1 Response")
     print(f"Backend Description : {prov_desc}")
@@ -124,11 +133,11 @@ def cmd_hotkeys(args: list = None):
     print(f"  Clipboard (EN)          : {hk.get('translate_clipboard', 'ctrl+y').upper()}")
     print("───────────────────────────────────────────────────────")
     print("To change hotkeys:")
-    print("  tr hotkeys --prompt ctrl+p")
-    print("  tr hotkeys --formatted ctrl+g")
-    print("  tr hotkeys --response ctrl+u")
-    print("  tr hotkeys --clipboard ctrl+k")
-    print("  tr hotkeys --reset")
+    print("  spk hotkeys --prompt ctrl+p")
+    print("  spk hotkeys --formatted ctrl+g")
+    print("  spk hotkeys --response ctrl+u")
+    print("  spk hotkeys --clipboard ctrl+k")
+    print("  spk hotkeys --reset")
     print("═══════════════════════════════════════════════════════")
 
 def cmd_rules(args: list = None):
@@ -173,14 +182,14 @@ def cmd_rules(args: list = None):
     print(prompt_content)
     print("───────────────────────────────────────────────────────")
     print("Options:")
-    print(f"  tr rules --{mode} --edit     : Edit this prompt in $EDITOR")
-    print(f"  tr rules --{mode} --reset    : Reset this prompt to defaults")
-    print("  tr rules --prompt           : View direct user prompt template")
-    print("  tr rules --formatted        : View formatted Markdown prompt template")
-    print("  tr rules --response         : View agent response template")
+    print(f"  spk rules --{mode} --edit     : Edit this prompt in $EDITOR")
+    print(f"  spk rules --{mode} --reset    : Reset this prompt to defaults")
+    print("  spk rules --prompt           : View direct user prompt template")
+    print("  spk rules --formatted        : View formatted Markdown prompt template")
+    print("  spk rules --response         : View agent response template")
     print("═══════════════════════════════════════════════════════")
 
-def cmd_config(provider: str = None, model: str = None, lang: str = None):
+def cmd_config(provider: str = None, model: str = None, response_lang: str = None, prompt_lang: str = None, clipboard: str = None):
     cfg = load_config()
     updated = False
 
@@ -197,8 +206,17 @@ def cmd_config(provider: str = None, model: str = None, lang: str = None):
         cfg["active_translator"]["model"] = model
         updated = True
 
-    if lang:
-        cfg.setdefault("languages", {})["target_response"] = lang
+    if response_lang:
+        cfg.setdefault("languages", {})["target_response"] = response_lang.lower()
+        updated = True
+
+    if prompt_lang:
+        cfg.setdefault("languages", {})["target_prompt"] = prompt_lang.lower()
+        updated = True
+
+    if clipboard is not None:
+        clip_bool = clipboard.lower() in ("on", "true", "1", "yes", "enable")
+        cfg["copy_to_clipboard"] = clip_bool
         updated = True
 
     if updated:
@@ -206,18 +224,24 @@ def cmd_config(provider: str = None, model: str = None, lang: str = None):
         print("✅ Configuration updated successfully:")
         print(f"   Provider      : {cfg['active_translator']['provider']}")
         print(f"   Model         : {cfg['active_translator']['model']}")
-        print(f"   Response Lang : {cfg['languages']['target_response']}")
+        resp_c = cfg['languages']['target_response']
+        prompt_c = cfg['languages']['target_prompt']
+        print(f"   Response Lang : {resp_c.upper()} ({get_language_name(resp_c)}) [AI Agent -> You]")
+        print(f"   Prompt Lang   : {prompt_c.upper()} ({get_language_name(prompt_c)}) [You -> AI Agent]")
+        print(f"   Clipboard Copy: {'ON' if cfg.get('copy_to_clipboard', False) else 'OFF'}")
     else:
         cmd_status()
-        print("\nTo switch backend, model or language, run:")
-        print("  tr config --provider agy-cli --model gemini-3.8-flash-low")
-        print("  tr config --provider claude-cli --model haiku")
-        print("  tr config --lang uk")
+        print("\nTo configure settings, run:")
+        print("  spk config --provider agy-cli --model gemini-3.8-flash-low")
+        print("  spk config --provider claude-cli --model haiku")
+        print("  spk config --response-lang uk   (or --lang uk)")
+        print("  spk config --prompt-lang en")
+        print("  spk config --clipboard on|off")
 
 def cmd_prompt(text: str, raw: bool = False, mode: str = "prompt"):
     if not text.strip():
         if not raw:
-            print("Usage: tr prompt 'your prompt' or tr format 'your prompt'")
+            print("Usage: spk prompt 'your prompt' or spk format 'your prompt'")
         return
 
     cfg = load_config()
@@ -237,7 +261,8 @@ def cmd_prompt(text: str, raw: bool = False, mode: str = "prompt"):
         print(translated)
         print("───────────────────────────────────────────────────────")
 
-        if sys.platform == "darwin":
+        copy_clip = cfg.get("copy_to_clipboard", False)
+        if copy_clip and sys.platform == "darwin":
             try:
                 p = subprocess.Popen(["pbcopy"], stdin=subprocess.PIPE)
                 p.communicate(translated.encode("utf-8"))
@@ -249,7 +274,7 @@ def cmd_prompt(text: str, raw: bool = False, mode: str = "prompt"):
 
 def cmd_agent_exec(agent: str, text: str):
     if not text.strip():
-        print(f"Usage: tr {agent} 'your prompt in any language'")
+        print(f"Usage: spk {agent} 'your prompt in any language'")
         return
     cfg = load_config()
     target_prompt = cfg.get("languages", {}).get("target_prompt", "en")
@@ -403,11 +428,14 @@ Commands:
       --response        View agent response template (Response -> UK)
       --edit            Edit active template in $EDITOR
       --reset           Reset active template to defaults
-  config [options]      View or change active translation provider:
+  config [options]      View or change settings:
       --provider <name> (agy-cli, claude-cli)
       --model <name>    (e.g. auto, gemini-3.8-flash-low, haiku)
-      --lang <code>     (e.g. uk, pl, de, es, fr)
-  prompt "<text>"       Translate prompt directly to English and copy to clipboard
+      --lang <code>     Target response language (e.g. uk, pl, de, es, fr)
+      --response-lang <code> Target response language (Agent -> You)
+      --prompt-lang <code>   Target prompt language (You -> Agent)
+      --clipboard <on|off>   Enable/disable auto-copy to clipboard
+  prompt "<text>"       Translate prompt directly to English
   format "<text>"       Translate and format prompt into structured Markdown
   raw "<text>"          Output ONLY the clean translated English string
   last                  Translate the latest response from Antigravity session
@@ -456,7 +484,9 @@ Commands:
     elif cmd == "config":
         provider = None
         model = None
-        lang = None
+        response_lang = None
+        prompt_lang = None
+        clipboard = None
         i = 1
         while i < len(args):
             if args[i] == "--provider" and i + 1 < len(args):
@@ -465,12 +495,18 @@ Commands:
             elif args[i] == "--model" and i + 1 < len(args):
                 model = args[i + 1]
                 i += 2
-            elif args[i] in ("--lang", "--language") and i + 1 < len(args):
-                lang = args[i + 1]
+            elif args[i] in ("--response-lang", "--response", "--lang", "--language") and i + 1 < len(args):
+                response_lang = args[i + 1]
+                i += 2
+            elif args[i] in ("--prompt-lang", "--prompt") and i + 1 < len(args):
+                prompt_lang = args[i + 1]
+                i += 2
+            elif args[i] in ("--clipboard", "--clip") and i + 1 < len(args):
+                clipboard = args[i + 1]
                 i += 2
             else:
                 i += 1
-        cmd_config(provider=provider, model=model, lang=lang)
+        cmd_config(provider=provider, model=model, response_lang=response_lang, prompt_lang=prompt_lang, clipboard=clipboard)
     elif cmd in ("prompt", "p"):
         raw = "--raw" in args
         clean_args = [a for a in args[1:] if a != "--raw"]

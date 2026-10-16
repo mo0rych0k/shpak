@@ -78,26 +78,45 @@ def translate_prompt_local(text: str, mode: str = "prompt") -> str:
         return text
 
     # 1. Try unified configuration from shpak
+    target_lang = "uk" if mode == "response" else "en"
     try:
         sys.path.insert(0, ROOT_DIR)
         from .config import load_config
         from .translator.factory import create_translator
         cfg = load_config()
         translator = create_translator(cfg)
-        target_prompt = cfg.get("languages", {}).get("target_prompt", "en")
-        translated = translator.translate(cleaned, source_lang="auto", target_lang=target_prompt, mode=mode)
+        lang_cfg = cfg.get("languages", {})
+        if mode == "response":
+            target_lang = lang_cfg.get("target_response", "uk")
+        else:
+            target_lang = lang_cfg.get("target_prompt", "en")
+        translated = translator.translate(cleaned, source_lang="auto", target_lang=target_lang, mode=mode)
         if translated and translated.strip():
             return translated.strip()
     except Exception:
         pass
 
     # 2. Fallback to direct agy CLI
-    instruction = (
-        "Translate the following user instruction to natural, precise technical English "
-        "for an AI coding assistant. Translate 100% completely without skipping, condensing, "
-        "or omitting anything. Return ONLY the translated text without markdown quotes, "
-        "preambles, or conversational filler:\n\n" + cleaned
-    )
+    try:
+        from .translator.base import get_language_name
+        target_name = get_language_name(target_lang)
+    except Exception:
+        target_name = target_lang
+
+    if mode == "response":
+        instruction = (
+            f"Translate the following AI coding assistant response to {target_name} ({target_lang.upper()}). "
+            "Translate 100% completely without skipping, condensing, or omitting anything. "
+            "Preserve all code blocks, inline code, math formulas, and markdown formatting intact. "
+            "Return ONLY the translated text without conversational filler:\n\n" + cleaned
+        )
+    else:
+        instruction = (
+            f"Translate the following user instruction to natural, precise technical {target_name} ({target_lang.upper()}) "
+            "for an AI coding assistant. Translate 100% completely without skipping, condensing, "
+            "or omitting anything. Return ONLY the translated text without markdown quotes, "
+            "preambles, or conversational filler:\n\n" + cleaned
+        )
 
     agy_bin = shutil.which("antigravity") or shutil.which("agy") or "agy"
     try:
@@ -665,9 +684,9 @@ def main():
                         try:
                             from .config import load_config
                             runtime_cfg = load_config()
-                            copy_clip = runtime_cfg.get("copy_to_clipboard", True)
+                            copy_clip = runtime_cfg.get("copy_to_clipboard", False)
                         except Exception:
-                            copy_clip = cfg.get("copy_to_clipboard", True)
+                            copy_clip = cfg.get("copy_to_clipboard", False)
 
                         # Copy to clipboard if enabled and on macOS
                         if copy_clip and sys.platform == "darwin":
