@@ -23,7 +23,11 @@ CYAN = "\033[36m"
 GREEN = "\033[32m"
 YELLOW = "\033[33m"
 RED = "\033[31m"
+WHITE = "\033[97m"
 GRAY = "\033[90m"
+MAGENTA = "\033[35m"
+BLUE_LINE = "\033[38;5;39m"
+YELLOW_LINE = "\033[38;5;220m"
 
 def cmd_status():
     cfg = ensure_onboarding(load_config())
@@ -44,41 +48,40 @@ def cmd_status():
     hk_c = hotkeys.get("translate_clipboard", "ctrl+y").upper()
 
     copy_clip = cfg.get("copy_to_clipboard", False)
-    clip_status = f"{GREEN}ON{RESET}" if copy_clip else f"{RED}OFF{RESET}"
-
-    GRAY = "\033[90m"
-    DIM = "\033[2m"
+    clip_status = f"{BOLD}{GREEN}ON{RESET}" if copy_clip else f"{BOLD}{RED}OFF{RESET}"
 
     version = cfg.get("version", "3.0.0")
-    print(f"\n{CYAN}{BOLD}shpak{RESET} {DIM}v{version} · developer ai translation suite{RESET}")
-    print(f"{GRAY}───────────────────────────────────────────────────────────────────{RESET}")
+    print(f"\n{BLUE_LINE}───────────────────────────────────────────────────────────────────{RESET}")
+    print(f"  {BOLD}{WHITE}S H P A K{RESET}  {GRAY}│{RESET}  {WHITE}v{version}{RESET}  {GRAY}·  developer ai translation suite{RESET}")
+    print(f"{YELLOW_LINE}───────────────────────────────────────────────────────────────────{RESET}")
 
-    print(f"{BOLD}Translation Engine:{RESET}")
-    print(f"  {DIM}Provider  :{RESET} {BOLD}{provider}{RESET} {DIM}({prov_desc}){RESET}")
-    print(f"  {DIM}Model     :{RESET} {BOLD}{model}{RESET}")
-    print(f"  {DIM}Language  :{RESET} Reply ➔ {BOLD}{target_resp.upper()}{RESET} {DIM}({get_language_name(target_resp)}){RESET}  │  Prompt ➔ {BOLD}{target_prompt.upper()}{RESET} {DIM}({get_language_name(target_prompt)}){RESET}")
-    print(f"  {DIM}Auto-Copy :{RESET} {clip_status}")
+    print(f"{CYAN}{BOLD}Translation Engine:{RESET}")
+    print(f"  {GRAY}Provider  :{RESET} {BOLD}{YELLOW}{provider}{RESET} {DIM}({prov_desc}){RESET}")
+    print(f"  {GRAY}Model     :{RESET} {BOLD}{CYAN}{model}{RESET}")
+    print(f"  {GRAY}Language  :{RESET} Reply ➔ {BOLD}{GREEN}{target_resp.upper()}{RESET} {DIM}({get_language_name(target_resp)}){RESET}  │  Prompt ➔ {BOLD}{CYAN}{target_prompt.upper()}{RESET} {DIM}({get_language_name(target_prompt)}){RESET}")
+    print(f"  {GRAY}Auto-Copy :{RESET} {clip_status}")
 
-    print(f"\n{BOLD}Wrapper Hotkeys:{RESET}")
-    print(f"  {DIM}Prompt (Direct)    :{RESET} {BOLD}{hk_p}{RESET}")
-    print(f"  {DIM}Prompt (Markdown)  :{RESET} {BOLD}{hk_f}{RESET}")
-    print(f"  {DIM}Agent Response     :{RESET} {BOLD}{hk_r}{RESET}")
-    print(f"  {DIM}Clipboard Translate:{RESET} {BOLD}{hk_c}{RESET}")
+    print(f"\n{CYAN}{BOLD}Wrapper Hotkeys:{RESET}")
+    print(f"  {GRAY}Prompt (Direct)    :{RESET} {BOLD}{YELLOW}{hk_p}{RESET}")
+    print(f"  {GRAY}Prompt (Markdown)  :{RESET} {BOLD}{MAGENTA}{hk_f}{RESET}")
+    print(f"  {GRAY}Agent Response     :{RESET} {BOLD}{GREEN}{hk_r}{RESET}")
+    print(f"  {GRAY}Clipboard Translate:{RESET} {BOLD}{CYAN}{hk_c}{RESET}")
 
-    print(f"\n{BOLD}AI Coding Assistants:{RESET}")
+    print(f"\n{CYAN}{BOLD}AI Coding Assistants:{RESET}")
     agents = detect_installed_agents()
     for key, info in agents.items():
         if info["installed"]:
             status = f"{GREEN}✔ installed{RESET} {GRAY}({info['path']}){RESET}"
         else:
-            status = f"{GRAY}✖ not found in PATH{RESET}"
-        badge = f"{GREEN}[stable]{RESET}" if key == "agy" else f"{GRAY}[experimental]{RESET}"
-        print(f"  • {BOLD}{info['name']:<18}{RESET} {DIM}{info['shpak_cmd']:<12}{RESET} {status} {badge}")
+            status = f"{RED}✖ not found in PATH{RESET}"
+        badge = f"{GREEN}[stable]{RESET}" if key == "agy" else f"{YELLOW}[experimental]{RESET}"
+        print(f"  • {BOLD}{info['name']:<18}{RESET} {YELLOW}{info['shpak_cmd']:<12}{RESET} {status} {badge}")
 
-    print(f"\n{BOLD}Available CLI Providers:{RESET}")
+    print(f"\n{CYAN}{BOLD}Available CLI Providers:{RESET}")
     for name, details in cfg.get("providers", {}).items():
         is_active = f" {GREEN}● active{RESET}" if name == provider else f" {GRAY}○{RESET}       "
-        print(f"  {is_active} {BOLD}{name:<12}{RESET} {DIM}{details.get('description', '')}{RESET}")
+        name_colored = f"{BOLD}{YELLOW}{name:<12}{RESET}" if name == provider else f"{name:<12}"
+        print(f"  {is_active} {name_colored} {DIM}{details.get('description', '')}{RESET}")
     print(f"{GRAY}───────────────────────────────────────────────────────────────────{RESET}\n")
 
 def cmd_hotkeys(args: list = None):
@@ -350,15 +353,16 @@ def cmd_last():
 def cmd_agents():
     """Displays installed and supported AI coding assistants."""
     agents = detect_installed_agents()
-    print(f"\n{CYAN}{BOLD}shpak{RESET} {DIM}· Supported AI Coding Assistants{RESET}")
-    print(f"{GRAY}───────────────────────────────────────────────────────────────────{RESET}")
+    print(f"\n{BLUE_LINE}───────────────────────────────────────────────────────────────────{RESET}")
+    print(f"  {BOLD}{WHITE}S H P A K{RESET}  {GRAY}│{RESET}  {CYAN}Supported AI Coding Assistants{RESET}")
+    print(f"{YELLOW_LINE}───────────────────────────────────────────────────────────────────{RESET}")
     for key, info in agents.items():
         if info["installed"]:
             status = f"{GREEN}✔ installed{RESET} {GRAY}({info['path']}){RESET}"
         else:
-            status = f"{GRAY}✖ not found in PATH{RESET}"
-        badge = f"{GREEN}[stable]{RESET}" if key == "agy" else f"{GRAY}[experimental]{RESET}"
-        print(f"  • {BOLD}{info['name']:<18}{RESET} {DIM}{info['shpak_cmd']:<12}{RESET} {status} {badge}")
+            status = f"{RED}✖ not found in PATH{RESET}"
+        badge = f"{GREEN}[stable]{RESET}" if key == "agy" else f"{YELLOW}[experimental]{RESET}"
+        print(f"  • {BOLD}{info['name']:<18}{RESET} {YELLOW}{info['shpak_cmd']:<12}{RESET} {status} {badge}")
     print(f"{GRAY}───────────────────────────────────────────────────────────────────{RESET}")
     print(f"  {DIM}Note: Verified on Google Antigravity. Other CLI wrappers are experimental.{RESET}\n")
 

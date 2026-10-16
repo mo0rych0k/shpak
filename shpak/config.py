@@ -250,10 +250,15 @@ def ensure_onboarding(cfg: dict, interactive: bool = True) -> dict:
     BOLD = "\033[1m"
     DIM = "\033[2m"
     GREEN = "\033[32m"
+    WHITE = "\033[97m"
+    GRAY = "\033[90m"
+    BLUE_LINE = "\033[38;5;39m"
+    YELLOW_LINE = "\033[38;5;220m"
     RESET = "\033[0m"
 
-    print(f"\n{CYAN}{BOLD}🐦 shpak initial setup{RESET}")
-    print(f"{DIM}─────────────────────────────────────────────────────────────{RESET}")
+    print(f"\n{BLUE_LINE}─────────────────────────────────────────────────────────────{RESET}")
+    print(f"  {BOLD}{WHITE}S H P A K{RESET}  {GRAY}│{RESET}  {CYAN}Initial Setup{RESET}")
+    print(f"{YELLOW_LINE}─────────────────────────────────────────────────────────────{RESET}")
     print(f"Configure target translation languages for AI coding assistants:\n")
 
     popular_resp = [

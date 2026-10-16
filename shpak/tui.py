@@ -25,6 +25,8 @@ MAGENTA = "\033[35m"
 RED = "\033[31m"
 WHITE = "\033[97m"
 GRAY = "\033[90m"
+BLUE_LINE = "\033[38;5;39m"
+YELLOW_LINE = "\033[38;5;220m"
 
 def clear_screen():
     print("\033[2J\033[H", end="")
@@ -44,21 +46,23 @@ def print_header(cfg: dict):
     hk_c = hotkeys.get("translate_clipboard", "ctrl+y").upper()
 
     copy_clip = cfg.get("copy_to_clipboard", False)
-    clip_status = f"{GREEN}on{RESET}" if copy_clip else f"{DIM}off{RESET}"
+    clip_status = f"{BOLD}{GREEN}ON{RESET}" if copy_clip else f"{BOLD}{RED}OFF{RESET}"
 
     version = cfg.get("version", "3.0.0")
 
-    print(f"{CYAN}{BOLD}🐦 shpak{RESET} {DIM}v{version}  ·  developer ai translation suite{RESET}")
-    print(f"{GRAY}────────────────────────────────────────────────────────────────────────{RESET}")
-    print(f"  {DIM}Backend  {RESET} {BOLD}{provider}{RESET} {DIM}({model}){RESET}   {GRAY}│{RESET}   {DIM}Auto-Copy{RESET} {clip_status}")
-    print(f"  {DIM}Language {RESET} Reply ➔ {BOLD}{target_resp.upper()}{RESET} {DIM}({get_language_name(target_resp)}){RESET}   {GRAY}│{RESET}   Prompt ➔ {BOLD}{target_prompt.upper()}{RESET} {DIM}({get_language_name(target_prompt)}){RESET}")
-    print(f"  {DIM}Hotkeys  {RESET} {DIM}Prompt:{RESET} {hk_p}  {DIM}Format:{RESET} {hk_f}  {DIM}Reply:{RESET} {hk_r}  {DIM}Clip:{RESET} {hk_c}")
+    print(f"{BLUE_LINE}────────────────────────────────────────────────────────────────────────{RESET}")
+    print(f"  {BOLD}{WHITE}S H P A K{RESET}  {GRAY}│{RESET}  {WHITE}v{version}{RESET}  {GRAY}·  developer ai translation suite{RESET}")
+    print(f"{YELLOW_LINE}────────────────────────────────────────────────────────────────────────{RESET}")
+    print(f"  {GRAY}Backend  {RESET} {BOLD}{YELLOW}{provider}{RESET} {CYAN}({model}){RESET}   {GRAY}│{RESET}   {GRAY}Auto-Copy{RESET} {clip_status}")
+    print(f"  {GRAY}Language {RESET} Reply ➔ {BOLD}{GREEN}{target_resp.upper()}{RESET} {DIM}({get_language_name(target_resp)}){RESET}   {GRAY}│{RESET}   Prompt ➔ {BOLD}{CYAN}{target_prompt.upper()}{RESET} {DIM}({get_language_name(target_prompt)}){RESET}")
+    print(f"  {GRAY}Hotkeys  {RESET} {GRAY}Prompt:{RESET} {YELLOW}{hk_p}{RESET}  {GRAY}Format:{RESET} {MAGENTA}{hk_f}{RESET}  {GRAY}Reply:{RESET} {GREEN}{hk_r}{RESET}  {GRAY}Clip:{RESET} {CYAN}{hk_c}{RESET}")
     print(f"{GRAY}────────────────────────────────────────────────────────────────────────{RESET}\n")
 
 def menu_select_provider(cfg: dict):
     clear_screen()
-    print(f"{CYAN}{BOLD}shpak{RESET} {DIM}· Select Translation Provider{RESET}")
-    print(f"{GRAY}────────────────────────────────────────────────────────────────────────{RESET}\n")
+    print(f"{BLUE_LINE}────────────────────────────────────────────────────────────────────────{RESET}")
+    print(f"  {BOLD}{WHITE}S H P A K{RESET}  {GRAY}│{RESET}  {CYAN}Select Translation Provider{RESET}")
+    print(f"{YELLOW_LINE}────────────────────────────────────────────────────────────────────────{RESET}\n")
     providers = cfg.get("providers", {})
     keys = list(providers.keys())
 
@@ -67,7 +71,7 @@ def menu_select_provider(cfg: dict):
         desc = info.get("description", "")
         is_cur = key == cfg["active_translator"]["provider"]
         marker = f"{GREEN}● active{RESET}" if is_cur else f"{GRAY}○{RESET}       "
-        name_str = f"{BOLD}{key:<12}{RESET}" if is_cur else f"{key:<12}"
+        name_str = f"{BOLD}{YELLOW}{key:<12}{RESET}" if is_cur else f"{key:<12}"
         print(f"  [{BOLD}{idx}{RESET}] {marker} {name_str} {DIM}{desc}{RESET}")
 
     print(f"\n  [{BOLD}0{RESET}] Back to Main Menu")
@@ -95,15 +99,16 @@ def menu_select_model(cfg: dict):
     prov_cfg = cfg.get("providers", {}).get(provider, {})
     models = prov_cfg.get("models", [])
 
-    print(f"{CYAN}{BOLD}shpak{RESET} {DIM}· Select Model for {BOLD}{provider}{RESET}")
-    print(f"{GRAY}────────────────────────────────────────────────────────────────────────{RESET}\n")
+    print(f"{BLUE_LINE}────────────────────────────────────────────────────────────────────────{RESET}")
+    print(f"  {BOLD}{WHITE}S H P A K{RESET}  {GRAY}│{RESET}  {CYAN}Select Model for {BOLD}{YELLOW}{provider}{RESET}")
+    print(f"{YELLOW_LINE}────────────────────────────────────────────────────────────────────────{RESET}\n")
     if not models:
         print("  No predefined models found for this provider.")
     else:
         for idx, m in enumerate(models, 1):
             is_cur = m == current_model
             marker = f"{GREEN}● active{RESET}" if is_cur else f"{GRAY}○{RESET}       "
-            m_str = f"{BOLD}{m}{RESET}" if is_cur else f"{m}"
+            m_str = f"{BOLD}{CYAN}{m}{RESET}" if is_cur else f"{m}"
             print(f"  [{BOLD}{idx}{RESET}] {marker} {m_str}")
 
     print(f"\n  [{BOLD}C{RESET}] Custom model name / ID")
@@ -134,8 +139,9 @@ def menu_select_model(cfg: dict):
 
 def choose_single_language(title: str, current_code: str) -> str:
     clear_screen()
-    print(f"{CYAN}{BOLD}shpak{RESET} {DIM}· {title}{RESET}")
-    print(f"{GRAY}────────────────────────────────────────────────────────────────────────{RESET}")
+    print(f"{BLUE_LINE}────────────────────────────────────────────────────────────────────────{RESET}")
+    print(f"  {BOLD}{WHITE}S H P A K{RESET}  {GRAY}│{RESET}  {CYAN}{title}{RESET}")
+    print(f"{YELLOW_LINE}────────────────────────────────────────────────────────────────────────{RESET}")
     print(f"  Current: {GREEN}{BOLD}{current_code.upper()}{RESET} {DIM}({get_language_name(current_code)}){RESET}\n")
 
     popular = [
@@ -154,11 +160,11 @@ def choose_single_language(title: str, current_code: str) -> str:
     for i in range(0, len(popular), 2):
         c1, n1 = popular[i]
         m1 = f"{GREEN}●{RESET}" if c1 == current_code else f"{GRAY}○{RESET}"
-        item1 = f"[{BOLD}{i+1}{RESET}] {m1} {c1.upper()}  {n1:<10}"
+        item1 = f"[{BOLD}{i+1}{RESET}] {m1} {BOLD}{c1.upper()}{RESET}  {n1:<10}"
         if i + 1 < len(popular):
             c2, n2 = popular[i+1]
             m2 = f"{GREEN}●{RESET}" if c2 == current_code else f"{GRAY}○{RESET}"
-            item2 = f"[{BOLD}{i+2}{RESET}] {m2} {c2.upper()}  {n2:<10}"
+            item2 = f"[{BOLD}{i+2}{RESET}] {m2} {BOLD}{c2.upper()}{RESET}  {n2:<10}"
             print(f"  {item1:<28} {item2}")
         else:
             print(f"  {item1}")
@@ -190,14 +196,15 @@ def menu_select_language(cfg: dict):
         resp_lang = lang_cfg.get("target_response", "uk")
         prompt_lang = lang_cfg.get("target_prompt", "en")
 
-        print(f"{CYAN}{BOLD}shpak{RESET} {DIM}· Language Configuration{RESET}")
-        print(f"{GRAY}────────────────────────────────────────────────────────────────────────{RESET}\n")
-        print(f"  {DIM}Agent Response (Agent ➔ You)  :{RESET} {BOLD}{GREEN}{resp_lang.upper()}{RESET} {DIM}({get_language_name(resp_lang)}){RESET}")
-        print(f"  {DIM}Developer Prompt (You ➔ Agent):{RESET} {BOLD}{CYAN}{prompt_lang.upper()}{RESET} {DIM}({get_language_name(prompt_lang)}){RESET}\n")
+        print(f"{BLUE_LINE}────────────────────────────────────────────────────────────────────────{RESET}")
+        print(f"  {BOLD}{WHITE}S H P A K{RESET}  {GRAY}│{RESET}  {CYAN}Language Configuration{RESET}")
+        print(f"{YELLOW_LINE}────────────────────────────────────────────────────────────────────────{RESET}\n")
+        print(f"  {GRAY}Agent Response (Agent ➔ You)  :{RESET} {BOLD}{GREEN}{resp_lang.upper()}{RESET} {DIM}({get_language_name(resp_lang)}){RESET}")
+        print(f"  {GRAY}Developer Prompt (You ➔ Agent):{RESET} {BOLD}{CYAN}{prompt_lang.upper()}{RESET} {DIM}({get_language_name(prompt_lang)}){RESET}\n")
 
         print(f"  [{BOLD}1{RESET}] Change Agent Response Language")
         print(f"  [{BOLD}2{RESET}] Change Developer Prompt Language")
-        print(f"  [{BOLD}3{RESET}] Swap Languages ({prompt_lang.upper()} ⇄ {resp_lang.upper()})")
+        print(f"  [{BOLD}3{RESET}] Swap Languages ({GREEN}{prompt_lang.upper()}{RESET} ⇄ {CYAN}{resp_lang.upper()}{RESET})")
         print(f"\n  [{BOLD}0{RESET}] Back to Main Menu")
 
         choice = input(f"\n{BOLD}Select option: {RESET}").strip()
@@ -232,12 +239,13 @@ def menu_hotkeys(cfg: dict):
         hk_r = hotkeys.get("translate_response", "ctrl+r").upper()
         hk_c = hotkeys.get("translate_clipboard", "ctrl+y").upper()
 
-        print(f"{CYAN}{BOLD}shpak{RESET} {DIM}· Terminal Hotkeys Configuration{RESET}")
-        print(f"{GRAY}────────────────────────────────────────────────────────────────────────{RESET}\n")
-        print(f"  [{BOLD}1{RESET}] Direct Prompt (You ➔ Agent)       {BOLD}{hk_p}{RESET}")
-        print(f"  [{BOLD}2{RESET}] Formatted Markdown Prompt          {BOLD}{hk_f}{RESET}")
-        print(f"  [{BOLD}3{RESET}] Agent Response (Agent ➔ You)      {BOLD}{hk_r}{RESET}")
-        print(f"  [{BOLD}4{RESET}] Clipboard Translation             {BOLD}{hk_c}{RESET}")
+        print(f"{BLUE_LINE}────────────────────────────────────────────────────────────────────────{RESET}")
+        print(f"  {BOLD}{WHITE}S H P A K{RESET}  {GRAY}│{RESET}  {CYAN}Terminal Hotkeys Configuration{RESET}")
+        print(f"{YELLOW_LINE}────────────────────────────────────────────────────────────────────────{RESET}\n")
+        print(f"  [{BOLD}1{RESET}] Direct Prompt (You ➔ Agent)       {BOLD}{YELLOW}{hk_p}{RESET}")
+        print(f"  [{BOLD}2{RESET}] Formatted Markdown Prompt          {BOLD}{MAGENTA}{hk_f}{RESET}")
+        print(f"  [{BOLD}3{RESET}] Agent Response (Agent ➔ You)      {BOLD}{GREEN}{hk_r}{RESET}")
+        print(f"  [{BOLD}4{RESET}] Clipboard Translation             {BOLD}{CYAN}{hk_c}{RESET}")
         print(f"  [{BOLD}5{RESET}] Reset all hotkeys to defaults")
         print(f"\n  [{BOLD}0{RESET}] Back to Main Menu")
 
@@ -286,17 +294,18 @@ def menu_hotkeys(cfg: dict):
 def menu_prompts(cfg: dict):
     while True:
         clear_screen()
-        print(f"{CYAN}{BOLD}shpak{RESET} {DIM}· Translation Prompts & Engineering{RESET}")
-        print(f"{GRAY}────────────────────────────────────────────────────────────────────────{RESET}\n")
-        print(f"  {BOLD}Preview Prompts:{RESET}")
+        print(f"{BLUE_LINE}────────────────────────────────────────────────────────────────────────{RESET}")
+        print(f"  {BOLD}{WHITE}S H P A K{RESET}  {GRAY}│{RESET}  {CYAN}Translation Prompts & Engineering{RESET}")
+        print(f"{YELLOW_LINE}────────────────────────────────────────────────────────────────────────{RESET}\n")
+        print(f"  {CYAN}{BOLD}PREVIEW PROMPTS{RESET}")
         print(f"  [{BOLD}1{RESET}] Direct Prompt Template        {DIM}(You ➔ Agent technical prompt){RESET}")
         print(f"  [{BOLD}2{RESET}] Markdown Prompt Template      {DIM}(Structured Markdown brief){RESET}")
         print(f"  [{BOLD}3{RESET}] Agent Response Template       {DIM}(Zero omissions, math/code preserved){RESET}")
-        print(f"\n  {BOLD}Edit Prompts ($EDITOR):{RESET}")
+        print(f"\n  {CYAN}{BOLD}EDIT PROMPTS ($EDITOR){RESET}")
         print(f"  [{BOLD}4{RESET}] Edit Direct Prompt Template")
         print(f"  [{BOLD}5{RESET}] Edit Formatted Markdown Prompt Template")
         print(f"  [{BOLD}6{RESET}] Edit Agent Response Template")
-        print(f"\n  {BOLD}Reset:{RESET}")
+        print(f"\n  {CYAN}{BOLD}RESET{RESET}")
         print(f"  [{BOLD}7{RESET}] Reset all prompts to factory defaults")
         print(f"\n  [{BOLD}0{RESET}] Back to Main Menu")
 
@@ -305,22 +314,25 @@ def menu_prompts(cfg: dict):
             break
         elif choice == "1":
             clear_screen()
-            print(f"{CYAN}{BOLD}shpak{RESET} {DIM}· Direct Prompt Template{RESET}")
-            print(f"{GRAY}────────────────────────────────────────────────────────────────────────{RESET}\n")
+            print(f"{BLUE_LINE}────────────────────────────────────────────────────────────────────────{RESET}")
+            print(f"  {BOLD}{WHITE}S H P A K{RESET}  {GRAY}│{RESET}  {CYAN}Direct Prompt Template{RESET}")
+            print(f"{YELLOW_LINE}────────────────────────────────────────────────────────────────────────{RESET}\n")
             print(cfg.get("prompts", {}).get("prompt", DEFAULT_PROMPT_TEMPLATE))
             print(f"\n{GRAY}────────────────────────────────────────────────────────────────────────{RESET}")
             input(f"{DIM}Press Enter to return...{RESET}")
         elif choice == "2":
             clear_screen()
-            print(f"{CYAN}{BOLD}shpak{RESET} {DIM}· Markdown Prompt Template{RESET}")
-            print(f"{GRAY}────────────────────────────────────────────────────────────────────────{RESET}\n")
+            print(f"{BLUE_LINE}────────────────────────────────────────────────────────────────────────{RESET}")
+            print(f"  {BOLD}{WHITE}S H P A K{RESET}  {GRAY}│{RESET}  {CYAN}Markdown Prompt Template{RESET}")
+            print(f"{YELLOW_LINE}────────────────────────────────────────────────────────────────────────{RESET}\n")
             print(cfg.get("prompts", {}).get("prompt_formatted", DEFAULT_FORMATTED_PROMPT_TEMPLATE))
             print(f"\n{GRAY}────────────────────────────────────────────────────────────────────────{RESET}")
             input(f"{DIM}Press Enter to return...{RESET}")
         elif choice == "3":
             clear_screen()
-            print(f"{CYAN}{BOLD}shpak{RESET} {DIM}· Agent Response Template{RESET}")
-            print(f"{GRAY}────────────────────────────────────────────────────────────────────────{RESET}\n")
+            print(f"{BLUE_LINE}────────────────────────────────────────────────────────────────────────{RESET}")
+            print(f"  {BOLD}{WHITE}S H P A K{RESET}  {GRAY}│{RESET}  {CYAN}Agent Response Template{RESET}")
+            print(f"{YELLOW_LINE}────────────────────────────────────────────────────────────────────────{RESET}\n")
             print(cfg.get("prompts", {}).get("response", DEFAULT_RESPONSE_TEMPLATE))
             print(f"\n{GRAY}────────────────────────────────────────────────────────────────────────{RESET}")
             input(f"{DIM}Press Enter to return...{RESET}")
@@ -375,13 +387,14 @@ def test_translation(cfg: dict):
     target_prompt = cfg.get("languages", {}).get("target_prompt", "en")
     target_resp = cfg.get("languages", {}).get("target_response", "uk")
 
-    print(f"{CYAN}{BOLD}shpak{RESET} {DIM}· Live Translation Test{RESET}")
-    print(f"{GRAY}────────────────────────────────────────────────────────────────────────{RESET}")
-    print(f"  Backend: {BOLD}{provider}{RESET} {DIM}({model}){RESET}\n")
+    print(f"{BLUE_LINE}────────────────────────────────────────────────────────────────────────{RESET}")
+    print(f"  {BOLD}{WHITE}S H P A K{RESET}  {GRAY}│{RESET}  {CYAN}Live Translation Test{RESET}")
+    print(f"{YELLOW_LINE}────────────────────────────────────────────────────────────────────────{RESET}")
+    print(f"  Backend: {BOLD}{YELLOW}{provider}{RESET} {CYAN}({model}){RESET}\n")
 
-    print(f"  [{BOLD}1{RESET}] Direct Prompt       ➔ {target_prompt.upper()} ({get_language_name(target_prompt)})")
-    print(f"  [{BOLD}2{RESET}] Formatted Markdown  ➔ {target_prompt.upper()} Markdown")
-    print(f"  [{BOLD}3{RESET}] Agent Response      ➔ {target_resp.upper()} ({get_language_name(target_resp)})")
+    print(f"  [{BOLD}1{RESET}] Direct Prompt       ➔ {CYAN}{BOLD}{target_prompt.upper()}{RESET} ({get_language_name(target_prompt)})")
+    print(f"  [{BOLD}2{RESET}] Formatted Markdown  ➔ {MAGENTA}{BOLD}{target_prompt.upper()}{RESET} Markdown")
+    print(f"  [{BOLD}3{RESET}] Agent Response      ➔ {GREEN}{BOLD}{target_resp.upper()}{RESET} ({get_language_name(target_resp)})")
     print(f"  [{BOLD}0{RESET}] Back to Main Menu")
 
     mode_choice = input(f"\n{BOLD}Select test mode: {RESET}").strip()
@@ -419,8 +432,9 @@ def test_translation(cfg: dict):
 def menu_launch_wrapper(cfg: dict) -> bool:
     clear_screen()
     agents = detect_installed_agents()
-    print(f"{CYAN}{BOLD}shpak{RESET} {DIM}· Launch AI Assistant Wrapper{RESET}")
-    print(f"{GRAY}────────────────────────────────────────────────────────────────────────{RESET}\n")
+    print(f"{BLUE_LINE}────────────────────────────────────────────────────────────────────────{RESET}")
+    print(f"  {BOLD}{WHITE}S H P A K{RESET}  {GRAY}│{RESET}  {CYAN}Launch AI Assistant Wrapper{RESET}")
+    print(f"{YELLOW_LINE}────────────────────────────────────────────────────────────────────────{RESET}\n")
 
     tools = [
         ("1", "agy", "Antigravity", "agy-spk"),
@@ -430,19 +444,19 @@ def menu_launch_wrapper(cfg: dict) -> bool:
         ("5", "aider", "Aider", "spk aider"),
     ]
 
-    print(f"  {BOLD}Supported Assistants:{RESET}")
+    print(f"  {CYAN}{BOLD}SUPPORTED ASSISTANTS{RESET}")
     for key_idx, tool_id, name, shpak_cmd in tools:
         ag_info = agents.get(tool_id, {})
         if ag_info.get("installed", False):
             badge = f"{GREEN}✔ installed{RESET} {GRAY}({ag_info.get('path')}){RESET}"
         else:
-            badge = f"{GRAY}✖ not found in PATH{RESET}"
-        test_badge = f"{GREEN}[stable]{RESET}" if tool_id == "agy" else f"{GRAY}[experimental]{RESET}"
-        print(f"  [{BOLD}{key_idx}{RESET}] {BOLD}{name:<14}{RESET} {DIM}{shpak_cmd:<12}{RESET} {badge} {test_badge}")
+            badge = f"{RED}✖ not found in PATH{RESET}"
+        test_badge = f"{GREEN}[stable]{RESET}" if tool_id == "agy" else f"{YELLOW}[experimental]{RESET}"
+        print(f"  [{BOLD}{key_idx}{RESET}] {BOLD}{name:<14}{RESET} {YELLOW}{shpak_cmd:<12}{RESET} {badge} {test_badge}")
 
-    print(f"\n  {BOLD}Generic Tools:{RESET}")
-    print(f"  [{BOLD}6{RESET}] Custom Command  {DIM}(spk run <cmd> - wrap any terminal process){RESET}")
-    print(f"  [{BOLD}T{RESET}] Demo Playground {DIM}(spk demo - test hotkeys without accounts){RESET}")
+    print(f"\n  {CYAN}{BOLD}GENERIC TOOLS{RESET}")
+    print(f"  [{BOLD}6{RESET}] Custom Command  {YELLOW}(spk run <cmd>){RESET} {DIM}- wrap any terminal process{RESET}")
+    print(f"  [{BOLD}T{RESET}] Demo Sandbox   {YELLOW}(spk demo){RESET}      {DIM}- test hotkeys without accounts{RESET}")
     print(f"\n  [{BOLD}0{RESET}] Back to Main Menu")
 
     choice = input(f"\n{BOLD}Select option: {RESET}").strip()
@@ -499,24 +513,24 @@ def run_tui():
         print_header(cfg)
 
         copy_clip = cfg.get("copy_to_clipboard", False)
-        clip_btn = f"{GREEN}ON{RESET}" if copy_clip else f"{GRAY}OFF{RESET}"
+        clip_btn = f"{BOLD}{GREEN}ON{RESET}" if copy_clip else f"{BOLD}{RED}OFF{RESET}"
         lang_cfg = cfg.get("languages", {})
         r_code = lang_cfg.get("target_response", "uk").upper()
         p_code = lang_cfg.get("target_prompt", "en").upper()
         provider = cfg.get("active_translator", {}).get("provider", "agy-cli")
         model = cfg.get("active_translator", {}).get("model", "auto")
 
-        print(f"  {BOLD}CONFIGURATION{RESET}")
-        print(f"  [{BOLD}1{RESET}] Translation Provider   {DIM}{provider}{RESET}")
-        print(f"  [{BOLD}2{RESET}] Model Selection        {DIM}{model}{RESET}")
-        print(f"  [{BOLD}3{RESET}] Target Languages       {DIM}Reply ➔ {r_code} │ Prompt ➔ {p_code}{RESET}")
-        print(f"  [{BOLD}4{RESET}] Wrapper Hotkeys        {DIM}Ctrl+T · Ctrl+F · Ctrl+R · Ctrl+Y{RESET}")
+        print(f"  {CYAN}{BOLD}CONFIGURATION{RESET}")
+        print(f"  [{BOLD}1{RESET}] Translation Provider   {BOLD}{YELLOW}{provider}{RESET}")
+        print(f"  [{BOLD}2{RESET}] Model Selection        {CYAN}{model}{RESET}")
+        print(f"  [{BOLD}3{RESET}] Target Languages       Reply ➔ {BOLD}{GREEN}{r_code}{RESET} │ Prompt ➔ {BOLD}{CYAN}{p_code}{RESET}")
+        print(f"  [{BOLD}4{RESET}] Wrapper Hotkeys        {YELLOW}Ctrl+T{RESET} · {MAGENTA}Ctrl+F{RESET} · {GREEN}Ctrl+R{RESET} · {CYAN}Ctrl+Y{RESET}")
         print(f"  [{BOLD}5{RESET}] Prompt Engineering     {DIM}Direct · Markdown · Response templates{RESET}")
         print(f"  [{BOLD}6{RESET}] Clipboard Auto-Copy    [{clip_btn}]")
 
-        print(f"\n  {BOLD}OPERATIONS{RESET}")
+        print(f"\n  {CYAN}{BOLD}OPERATIONS{RESET}")
         print(f"  [{BOLD}7{RESET}] Test Live Translation  {DIM}Verify translation latency & output{RESET}")
-        print(f"  [{BOLD}8{RESET}] Launch AI CLI Wrapper  {DIM}agy-spk, claude-spk, codex-spk...{RESET}")
+        print(f"  [{BOLD}8{RESET}] Launch AI CLI Wrapper  {BOLD}{GREEN}agy-spk{RESET}{DIM}, claude-spk, codex-spk...{RESET}")
 
         print(f"\n  [{BOLD}0{RESET}] Exit")
 

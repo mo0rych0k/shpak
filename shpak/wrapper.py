@@ -235,10 +235,11 @@ def run_demo_agent():
     except Exception:
         pass
 
-    sys.stdout.write("\r\n\033[1;36m🐦 shpak demo simulator\033[0m \033[2m· testing playground\033[0m\r\n")
-    sys.stdout.write("\033[90m─────────────────────────────────────────────────────────────\033[0m\r\n")
-    sys.stdout.write("\033[90mHotkeys:\033[0m \033[1mCtrl+T\033[0m (Prompt) · \033[1mCtrl+F\033[0m (Markdown) · \033[1mCtrl+R\033[0m (Reply) · \033[1mCtrl+Y\033[0m (Clipboard)\r\n")
-    sys.stdout.write("\033[90m(Type 'exit' to quit)\033[0m\r\n\r\n")
+    sys.stdout.write("\r\n\033[38;5;39m─────────────────────────────────────────────────────────────\033[0m\r\n")
+    sys.stdout.write("  \033[1;97mS H P A K\033[0m  \033[90m│\033[0m  \033[36mDemo Simulator\033[0m  \033[90m·  testing playground\033[0m\r\n")
+    sys.stdout.write("\033[38;5;220m─────────────────────────────────────────────────────────────\033[0m\r\n")
+    sys.stdout.write("  \033[90mHotkeys:\033[0m \033[1;33mCtrl+T\033[0m (Prompt) · \033[1;35mCtrl+F\033[0m (Markdown) · \033[1;32mCtrl+R\033[0m (Reply) · \033[1;36mCtrl+Y\033[0m (Clip)\r\n")
+    sys.stdout.write("  \033[90m(Type 'exit' to quit)\033[0m\r\n\r\n")
 
     sys.stdout.write(initial_msg.replace("\n", "\r\n") + "\r\n\r\n")
     sys.stdout.flush()

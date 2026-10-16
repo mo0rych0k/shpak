@@ -1,14 +1,18 @@
 #!/usr/bin/env bash
 
+BLUE='\033[38;5;39m'
+YELLOW='\033[38;5;220m'
 GREEN='\033[0;32m'
 CYAN='\033[0;36m'
+WHITE='\033[1;97m'
 BOLD='\033[1m'
 DIM='\033[2m'
 GRAY='\033[90m'
 RESET='\033[0m'
 
-echo -e "\n${CYAN}${BOLD}🐦 shpak${RESET} ${DIM}· uninstaller${RESET}"
-echo -e "${GRAY}─────────────────────────────────────────────────────────────${RESET}"
+echo -e "\n${BLUE}─────────────────────────────────────────────────────────────${RESET}"
+echo -e "  ${WHITE}S H P A K${RESET}  ${GRAY}│${RESET}  ${CYAN}uninstaller${RESET}  ${GRAY}·  developer ai translation suite${RESET}"
+echo -e "${YELLOW}─────────────────────────────────────────────────────────────${RESET}"
 
 # 1. Remove LaunchAgent service if left behind
 PLIST="${HOME}/Library/LaunchAgents/com.llm-translate.proxy.plist"
