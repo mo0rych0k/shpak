@@ -7,6 +7,7 @@ from pathlib import Path
 from .config import (
     load_config,
     save_config,
+    detect_installed_agents,
     DEFAULT_PROMPT_TEMPLATE,
     DEFAULT_FORMATTED_PROMPT_TEMPLATE,
     DEFAULT_RESPONSE_TEMPLATE
@@ -24,6 +25,8 @@ MAGENTA = "\033[35m"
 RED = "\033[31m"
 WHITE = "\033[97m"
 GRAY = "\033[90m"
+BLUE_LINE = "\033[38;5;39m\033[1m"
+YELLOW_LINE = "\033[38;5;220m\033[1m"
 
 def clear_screen():
     print("\033[2J\033[H", end="")
@@ -44,9 +47,9 @@ def print_header(cfg: dict):
     copy_clip = cfg.get("copy_to_clipboard", True)
     clip_status = f"{GREEN}ON{RESET}" if copy_clip else f"{RED}OFF{RESET}"
 
-    print(f"{CYAN}{BOLD}╔═════════════════════════════════════════════════════════════════════════════╗{RESET}")
-    print(f"{CYAN}{BOLD}║                    🐦  SHPAK (ШПАК) CONTROL PANEL (ZERO KEYS)               ║{RESET}")
-    print(f"{CYAN}{BOLD}╚═════════════════════════════════════════════════════════════════════════════╝{RESET}")
+    print(f"{BLUE_LINE}╔═════════════════════════════════════════════════════════════════════════════╗{RESET}")
+    print(f"{BLUE_LINE}║                      🐦  SHPAK CONTROL PANEL (ZERO KEYS)                    ║{RESET}")
+    print(f"{YELLOW_LINE}╚═════════════════════════════════════════════════════════════════════════════╝{RESET}")
     print(f"  Provider : {BOLD}{YELLOW}{provider}{RESET}  |  Model: {BOLD}{CYAN}{model}{RESET}  |  Copy to Clipboard: {BOLD}{clip_status}{RESET}")
     print(f"  Language : {BOLD}{GREEN}{target_resp.upper()} ({get_language_name(target_resp)}){RESET}")
     print(f"  Hotkeys  : {BOLD}{WHITE}Prompt: {hk_p}  |  Markdown: {hk_f}  |  Response: {hk_r}  |  Clipboard: {hk_c}{RESET}")
@@ -127,13 +130,13 @@ def menu_select_language(cfg: dict):
     clear_screen()
     print(f"{CYAN}{BOLD}=== 🌍 SELECT TARGET RESPONSE LANGUAGE ==={RESET}\n")
     popular = [
-        ("uk", "Ukrainian (Українська)"),
-        ("pl", "Polish (Polski)"),
-        ("de", "German (Deutsch)"),
-        ("es", "Spanish (Español)"),
-        ("fr", "French (Français)"),
-        ("it", "Italian (Italiano)"),
-        ("ja", "Japanese (日本語)"),
+        ("uk", "Ukrainian"),
+        ("pl", "Polish"),
+        ("de", "German"),
+        ("es", "Spanish"),
+        ("fr", "French"),
+        ("it", "Italian"),
+        ("ja", "Japanese"),
         ("en", "English")
     ]
 
@@ -335,7 +338,7 @@ def test_translation(cfg: dict):
 
     text = input(f"\n{BOLD}Enter text to translate (or press Enter for default): {RESET}").strip()
     if not text:
-        text = "створи простий скрипт перевірки доступності сервера по HTTP і перевір код відповіді"
+        text = "create an asynchronous HTTP server in FastAPI and verify the response status code"
 
     print(f"\n🔄 Translating in mode [{mode}]...")
     translator = create_translator(cfg)
@@ -354,44 +357,73 @@ def test_translation(cfg: dict):
 
 def menu_launch_wrapper(cfg: dict) -> bool:
     clear_screen()
+    agents = detect_installed_agents()
     print(f"{CYAN}{BOLD}=== 🚀 LAUNCH AI CODING CLI WITH TRANSLATION WRAPPER ==={RESET}\n")
-    print(f"  [{BOLD}1{RESET}] 🌟 Antigravity ({YELLOW}agy-shpak{RESET})       - Google AI Pro / Gemini / Sonnet")
-    print(f"  [{BOLD}2{RESET}] 🧠 Claude Code ({YELLOW}claude-shpak{RESET})   - Anthropic Claude Code CLI")
-    print(f"  [{BOLD}3{RESET}] ⚡ Codex CLI ({YELLOW}codex-shpak{RESET})     - OpenAI Codex CLI")
-    print(f"  [{BOLD}4{RESET}] 🎯 Cursor Agent ({YELLOW}cursor-shpak{RESET})  - Cursor Agent CLI")
-    print(f"  [{BOLD}5{RESET}] 🌐 Custom Tool ({YELLOW}shpak run <cmd>{RESET}) - Universal wrapper for any CLI")
-    print(f"  [{BOLD}T{RESET}] 🧪 Interactive Demo Playground     - Test all hotkeys instantly without accounts")
+    print(f"{BOLD}Detected AI Coding Assistants:{RESET}\n")
+
+    tools = [
+        ("1", "agy", "Antigravity", "agy-spk"),
+        ("2", "claude", "Claude Code", "claude-spk"),
+        ("3", "codex", "Codex CLI", "codex-spk"),
+        ("4", "cursor", "Cursor Agent", "cursor-spk"),
+        ("5", "aider", "Aider", "spk aider"),
+    ]
+
+    for key_idx, tool_id, name, shpak_cmd in tools:
+        ag_info = agents.get(tool_id, {})
+        if ag_info.get("installed", False):
+            badge = f"{GREEN}✔ INSTALLED{RESET} {GRAY}({ag_info.get('path')}){RESET}"
+        else:
+            badge = f"{RED}✖ Not found in PATH{RESET}"
+        print(f"  [{BOLD}{key_idx}{RESET}] {name:<15} ({YELLOW}{shpak_cmd:<10}{RESET}) : {badge}")
+
+    print(f"  [{BOLD}6{RESET}] Universal CLI  ({YELLOW}spk run <cmd>{RESET}) : Wrap any terminal command")
+    print(f"  [{BOLD}T{RESET}] Demo Sandbox  ({YELLOW}spk demo{RESET})      : Test hotkeys & features without accounts")
     print(f"\n  [{BOLD}0{RESET}] Back to Main Menu")
 
-    choice = input(f"\n{BOLD}Select CLI to launch [1-5 / T]: {RESET}").strip()
+    choice = input(f"\n{BOLD}Select CLI to launch [1-6 / T]: {RESET}").strip()
     if choice in ("0", "q", "exit"):
         return False
 
     wrapper_path = Path(__file__).parent.parent / "agy-shpak"
     if not wrapper_path.exists():
-        wrapper_path = Path(__file__).parent.parent / "ag-tr"
-    if not wrapper_path.exists():
-        wrapper_path = Path(shutil.which("agy-shpak") or shutil.which("ag-tr") or "agy-shpak")
+        wrapper_path = Path(shutil.which("agy-shpak") or shutil.which("agy-spk") or "agy-shpak")
 
     cmd = [sys.executable, str(wrapper_path)]
 
+    selected_tool = None
     if choice == "1":
+        selected_tool = "agy"
         cmd.append("--target=agy")
     elif choice == "2":
+        selected_tool = "claude"
         cmd.append("--target=claude")
     elif choice == "3":
+        selected_tool = "codex"
         cmd.append("--target=codex")
     elif choice == "4":
+        selected_tool = "cursor"
         cmd.append("--target=cursor")
+    elif choice == "5":
+        selected_tool = "aider"
+        cmd.append("--target=aider")
     elif choice.upper() == "T":
         cmd.append("--demo")
-    elif choice == "5":
+    elif choice == "6":
         custom = input(f"\n{BOLD}Enter CLI command to wrap (e.g. aider, python3): {RESET}").strip()
         if not custom:
             return False
         cmd.extend(["--target", custom])
     else:
         return False
+
+    if selected_tool:
+        ag_info = agents.get(selected_tool, {})
+        if not ag_info.get("installed", False):
+            print(f"\n{YELLOW}⚠️  Note: '{ag_info.get('name')}' ({ag_info.get('cmd')}) was not found in your PATH.{RESET}")
+            confirm = input(f"{BOLD}Try to launch anyway? [y/N]: {RESET}").strip().lower()
+            if confirm not in ("y", "yes"):
+                return False
 
     clear_screen()
     subprocess.run(cmd)

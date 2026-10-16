@@ -1,126 +1,177 @@
-# 🐦 Shpak (Шпак)
+# 🐦 Shpak (`spk`)
 
-> **Швидкий і прозорий термінальний PTY-враппер та технічний перекладач для AI-кодинг асистентів (Zero API Keys).**
+> **Fast, transparent terminal PTY wrapper & technical prompt/response translator for AI coding assistants (Zero API Keys required).**
 
-Як і птах **Шпак**, який славиться своєю дивовижною здатністю бездоганно переймати та відтворювати будь-які голоси й звуки, **Shpak** дозволяє вам спілкуватися з будь-яким AI-кодинг агентом рідною українською мовою, зберігаючи 100% технічну точність і нативний досвід термінала.
+Like the **starling (Шпак)** bird, renowned for its incredible ability to mimic and master any voice or sound, **Shpak** allows developers worldwide to interact with terminal AI coding agents in their native language while guaranteeing 100% technical accuracy, flawless syntax preservation, and a completely native terminal experience.
 
-Працює **безкоштовно та без API-токенів**, використовуючи ваші діючі підписки (Google AI Pro через `agy` або Claude Pro).
+Operates **without paid API keys**, routing translations through your existing active subscriptions (Google AI Pro via `agy` or Claude Pro via `claude`).
 
 ---
 
-## ⚡ Команди та інструменти
+## ⚡ CLI Commands & Tools
 
-Ви можете використовувати як ультра-короткі команди **`spk`**, так і повні назви **`shpak`**:
+Shpak provides ultra-fast 3-letter commands (`spk`) with full aliases (`shpak`):
 
-| Коротка | Повна | Для кого | Опис |
+| Command | Full Alias | Target Agent | Description |
 | :--- | :--- | :--- | :--- |
-| **`agy-spk`** | `agy-shpak` | **Antigravity CLI** (`agy`) | Прозорий PTY-враппер для Google Antigravity |
-| **`claude-spk`** | `claude-shpak` | **Claude Code CLI** (`claude`) | Враппер для Claude Code від Anthropic |
-| **`codex-spk`** | `codex-shpak` | **OpenAI Codex CLI** (`codex`) | Враппер для OpenAI Codex CLI |
-| **`cursor-spk`** | `cursor-shpak` | **Cursor Agent** (`cursor-agent`) | Враппер для термінального агента Cursor |
-| **`spk`** | `shpak` | **Control Center** | Інтерактивне TUI-меню, конфігурація, хоткеї та промпти |
+| **`agy-spk`** | `agy-shpak` | **Google Antigravity** (`agy`) | Transparent PTY wrapper for Antigravity CLI |
+| **`claude-spk`** | `claude-shpak` | **Claude Code CLI** (`claude`) | Transparent PTY wrapper for Anthropic Claude Code |
+| **`codex-spk`** | `codex-shpak` | **OpenAI Codex CLI** (`codex`) | Transparent PTY wrapper for OpenAI Codex CLI |
+| **`cursor-spk`** | `cursor-shpak` | **Cursor Agent** (`cursor-agent`) | Transparent PTY wrapper for Cursor terminal agent |
+| **`spk`** | `shpak` | **Control Center & Manager** | Interactive TUI, agent detector, hotkey & prompt editor |
 
 ---
 
-## 🚀 Встановлення
+## 🚀 Installation
 
-### Варіант 1: Швидкий One-Liner (Рекомендовано)
+### Option 1: Quick One-Liner (Recommended)
 ```bash
 curl -fsSL https://raw.githubusercontent.com/mo0rych0k/shpak/main/install.sh | bash
 ```
 
-### Варіант 2: Через `uv` або `pipx`
+### Option 2: Homebrew
+```bash
+brew install --HEAD https://raw.githubusercontent.com/mo0rych0k/shpak/main/Formula/shpak.rb
+# Or via custom tap:
+# brew install mo0rych0k/tap/shpak
+```
+
+### Option 3: Modern Python Package Manager (`uv` or `pipx`)
 ```bash
 uv tool install git+https://github.com/mo0rych0k/shpak.git
-# або
+# or
 pipx install git+https://github.com/mo0rych0k/shpak.git
 ```
 
-### Варіант 3: Ручне встановлення (з репозиторію)
+### Option 4: Manual Git Clone
 ```bash
 git clone https://github.com/mo0rych0k/shpak.git
 cd shpak
 ./install.sh
 ```
 
-*(Переконайтеся, що `~/.local/bin` додано до вашого `$PATH`)*.
+*(Ensure `~/.local/bin` is in your `$PATH`)*.
 
 ---
 
-## 🕹️ Глобальні хоткеї у сесіях
+## 🌍 First-Launch Language Selection
 
-Усі слеш-команди (`/`), Tab-автокомпліт, стрілки та історія працюють **на 100% нативно** без жодних спотворень:
+On first launch, Shpak presents an interactive setup asking for your primary native language for AI responses:
 
-| Хоткей | Дія | Опис |
+```text
+╔═══════════════════════════════════════════════════════════════╗
+║                   🐦 Welcome to Shpak (spk)!                 ║
+╚═══════════════════════════════════════════════════════════════╝
+Please select your primary native language for AI agent responses:
+
+  [1] UK   - Ukrainian
+  [2] ES   - Spanish
+  [3] DE   - German
+  [4] FR   - French
+  [5] PL   - Polish
+  ...
+```
+
+You can change this anytime with `spk config --lang <code>` or inside the interactive menu (`spk`).
+
+---
+
+## 🤖 AI Agent Detection
+
+Check which coding assistants are currently installed on your system:
+
+```bash
+spk agents
+# or
+spk status
+```
+
+Output:
+```text
+Detected AI Coding Assistants:
+  • Google Antigravity  [agy-spk   ] : ✔ INSTALLED (/usr/local/bin/agy)
+  • Claude Code CLI     [claude-spk] : ✔ INSTALLED (/usr/local/bin/claude)
+  • OpenAI Codex CLI    [codex-spk ] : ✖ Not found in PATH
+  • Cursor Agent        [cursor-spk] : ✖ Not found in PATH
+  • Aider               [spk aider ] : ✖ Not found in PATH
+```
+
+---
+
+## 🕹️ Global In-Session Hotkeys
+
+All slash commands (`/`), Tab completion, arrow keys, history, and raw control sequences pass through **100% transparently**:
+
+| Hotkey | Action | Description |
 | :--- | :--- | :--- |
-| **`Ctrl+T`** | 🌐 **Прямий переклад** | Зупиняє ввід, запитує текст українською, перекладає на технічну англійську та вставляє чистий текст у рядок вводу агента. |
-| **`Ctrl+F`** | 📝 **Markdown-промпт** | Перекладає запит та структурує його у професійний Markdown-бриф (Goal, Requirements, Steps, Acceptance Criteria) для кодинг-агента. |
-| **`Ctrl+R`** | 📜 **Переклад відповіді** | Витягує відповідь агента з логів сесії, перекладає українською зі збереженням блоків коду, формул та таблиць (**CodeShield**), виводить у термінал та копіює в буфер. |
-| **`Ctrl+Y`** | 📋 **Переклад з буфера** | Бере скопійований у буфер текст (наприклад, таску з Jira), перекладає на технічну англійську та вставляє у сесію. |
+| **`Ctrl+T`** | 🌐 **Direct Prompt** | Pauses input, prompts for your native task description, translates to technical English, and injects clean text into the agent's input line. |
+| **`Ctrl+F`** | 📝 **Markdown Prompt** | Translates and formats your request into a structured Markdown engineering brief (Goal, Requirements, Steps, Acceptance Criteria). |
+| **`Ctrl+R`** | 📜 **Translate Response** | Extracts latest assistant response from session logs, translates to your selected language with **CodeShield** protection, renders in terminal, and copies to clipboard. |
+| **`Ctrl+Y`** | 📋 **Clipboard Translation** | Reads copied text from system clipboard (e.g. Jira ticket or browser snippet), translates to technical English, and injects it into the session. |
 
 ---
 
-## 💡 Приклади використання
+## 💡 Usage Examples
 
-### 1. Запуск Antigravity з перекладом
+### 1. Launch Antigravity with Translation Wrapper
 ```bash
 agy-spk
-# або agy-shpak
 
-# Одразу з початковим запитом українською:
-agy-spk "створи асинхронний сервер на FastAPI з перевіркою токенів"
+# Or directly with an initial task in your native language:
+agy-spk "create an asynchronous HTTP server in FastAPI with JWT authentication"
 ```
 
-### 2. Запуск Claude Code CLI
+### 2. Launch Claude Code CLI
 ```bash
 claude-spk
-# або claude-shpak "проведи рефакторинг обробки помилок"
+
+# With an initial task:
+claude-spk "refactor error handling in the payment service"
 ```
 
-### 3. Запуск Codex CLI
+### 3. Launch Codex CLI
 ```bash
 codex-spk
 ```
 
-### 4. Тестовий режим без акаунтів (Demo Sandbox)
-Хочете протестувати всі хоткеї прямо зараз, не запускаючи сторонні CLI?
+### 4. Interactive Demo Sandbox (Zero Accounts Needed)
+Want to test all hotkeys right now without external CLI logins?
 ```bash
 agy-spk --demo
-# або
+# or
 spk demo
 ```
-Запускає локальний симулятор агента, де можна одразу перевірити переклад відповідей (`Ctrl+R`) та введення промптів (`Ctrl+T` / `Ctrl+F`).
 
 ---
 
-## 🛠️ Меню керування `spk` / `shpak`
+## 🛠️ Control Center (`spk`)
 
-Запустіть центр керування:
+Launch the interactive management console:
 ```bash
 spk
-# або shpak
 ```
 
-В інтерактивному TUI доступно:
-- **Перемикання провайдера перекладу**: `agy-cli` (Google AI Pro) або `claude-cli` (Claude Pro).
-- **Вибір моделі**: `gemini-3.8-flash-low`, `haiku`, `sonnet`, тощо.
-- **Зміна цільової мови**: українська, польська, німецька, іспанська, французька тощо.
-- **Налаштування гарячих клавіш** (`spk hotkeys`).
-- **Редагування системних правил перекладу** (`spk rules`).
-- **Лаунчер AI-асистентів** (пункт `[8]`).
+Features:
+- **Switch translation provider**: `agy-cli` (Google AI Pro) or `claude-cli` (Claude Pro).
+- **Model selector**: `gemini-3.8-flash-low`, `haiku`, `sonnet`, etc.
+- **Language configuration**: Ukrainian, Spanish, German, French, Polish, Japanese, etc.
+- **Hotkey manager**: customize shortcut keys (`spk hotkeys`).
+- **Prompt rules editor**: edit system prompts for direct and Markdown translation (`spk rules`).
+- **Agent launcher**: view detected agents and launch immediately.
+- **Auto-updater**: pull updates via `spk update`.
 
 ---
 
-## 🛡️ Технологія CodeShield
+## 🛡️ CodeShield Technology
 
-Переклад відповідей захищений технологією **CodeShield**:
-* Блоки коду (````...````) та inline-код (`` `...` ``) не спотворюються і не перекладаються.
-* Шляхи файлів, змінні, класи, команди git залишаються недоторканими.
-* Формули KaTeX/LaTeX, Unicode-матриці та псевдографіка зберігають точну структуру.
-* Повторне натискання `Ctrl+R` віддається миттєво з кешу (0.01с).
+Response translation is safeguarded by **CodeShield**:
+* Fenced code blocks (````...````) and inline code (`` `...` ``) are shielded with AST placeholders and never altered.
+* File paths, identifiers, class names, variable names, and git flags remain intact.
+* Mathematical formulas in KaTeX, LaTeX display blocks, and ASCII/Unicode math matrices retain exact visual structure.
+* Repeated translation queries return in 0.01s from cache.
 
 ---
 
-## 📄 Ліцензія
+## 📄 License
 
-MIT License. Створено з ❤️ в Україні.
+MIT License. Designed with ❤️ in Ukraine.

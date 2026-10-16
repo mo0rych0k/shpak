@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Shpak (Шпак) - Universal AI Coding Assistant CLI Manager & Translator.
+Shpak - Universal AI Coding Assistant CLI Manager & Translator.
 """
 
 import sys
@@ -11,10 +11,7 @@ root_dir = Path(__file__).resolve().parent
 if str(root_dir) not in sys.path:
     sys.path.insert(0, str(root_dir))
 
-try:
-    from shpak.cli import main
-except ImportError:
-    from llm_translate.cli import main
+from shpak.cli import main
 
 if __name__ == "__main__":
     main()

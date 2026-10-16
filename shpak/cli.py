@@ -7,6 +7,8 @@ from .config import (
     load_config,
     save_config,
     get_prompt_template,
+    detect_installed_agents,
+    ensure_onboarding,
     DEFAULT_PROMPT_TEMPLATE,
     DEFAULT_FORMATTED_PROMPT_TEMPLATE,
     DEFAULT_RESPONSE_TEMPLATE
@@ -14,8 +16,15 @@ from .config import (
 from .translator.factory import create_translator
 from .translator.base import get_language_name
 
+BLUE_LINE = "\033[38;5;39m\033[1m"
+YELLOW_LINE = "\033[38;5;220m\033[1m"
+RESET = "\033[0m"
+BOLD = "\033[1m"
+GREEN = "\033[32m"
+RED = "\033[31m"
+
 def cmd_status():
-    cfg = load_config()
+    cfg = ensure_onboarding(load_config())
     active = cfg.get("active_translator", {})
     provider = active.get("provider", "agy-cli")
     model = active.get("model", "auto")
@@ -32,9 +41,9 @@ def cmd_status():
     hk_r = hotkeys.get("translate_response", "ctrl+r").upper()
     hk_c = hotkeys.get("translate_clipboard", "ctrl+y").upper()
 
-    print("═══════════════════════════════════════════════════════")
+    print(f"{BLUE_LINE}═══════════════════════════════════════════════════════{RESET}")
     print("               🐦 Shpak CLI Status & Config            ")
-    print("═══════════════════════════════════════════════════════")
+    print(f"{BLUE_LINE}───────────────────────────────────────────────────────{RESET}")
     print(f"Active Backend      : {provider}")
     print(f"Model Selection     : {model}")
     print(f"Prompt Language     : {target_prompt.upper()} (User input -> English)")
@@ -43,11 +52,20 @@ def cmd_status():
     print(f"Prompt Templates    : 1 Direct, 1 Formatted (Markdown), 1 Response")
     print(f"Backend Description : {prov_desc}")
     print("───────────────────────────────────────────────────────")
+    print("Detected AI Coding Assistants:")
+    agents = detect_installed_agents()
+    for key, info in agents.items():
+        if info["installed"]:
+            status = f"{GREEN}✔ INSTALLED{RESET} ({info['path']})"
+        else:
+            status = f"{RED}✖ Not found in PATH{RESET}"
+        print(f"  • {info['name']:<19} [{info['shpak_cmd']:<10}] : {status}")
+    print("───────────────────────────────────────────────────────")
     print("Available CLI Providers (Zero API keys needed!):")
     for name, details in cfg.get("providers", {}).items():
-        is_active = " (ACTIVE)" if name == provider else ""
+        is_active = f" {GREEN}(ACTIVE){RESET}" if name == provider else ""
         print(f"  • {name:<12}{is_active} : {details.get('description', '')}")
-    print("═══════════════════════════════════════════════════════")
+    print(f"{YELLOW_LINE}═══════════════════════════════════════════════════════{RESET}")
 
 def cmd_hotkeys(args: list = None):
     cfg = load_config()
@@ -275,16 +293,16 @@ def cmd_last():
     target_resp = cfg.get("languages", {}).get("target_response", "uk")
     translator = create_translator(cfg)
     
-    print("🔄 Отримую останню відповідь агента...")
+    print("🔄 Fetching latest agent response...")
     raw_text = get_latest_agent_response()
     if not raw_text:
-        print("❌ Не знайдено відповідей агента в логах сесій Antigravity.")
+        print("❌ No agent response found in session logs.")
         return
 
     active = cfg.get("active_translator", {})
     t_name = "agy" if "agy" in active.get("provider", "") else ("claude" if "claude" in active.get("provider", "") else active.get("provider", "agy"))
     m_name = active.get("model", "gemini-3.8-flash-low")
-    print(f"🔄 [{t_name}: {m_name}] переклад на {target_resp.upper()}...")
+    print(f"🔄 [{t_name}: {m_name}] translating response to {target_resp.upper()}...")
     try:
         translated = translator.translate(raw_text, source_lang="auto", target_lang=target_resp, mode="response")
         if sys.platform == "darwin":
@@ -294,14 +312,29 @@ def cmd_last():
             except Exception:
                 pass
 
-        print(f"\n═══════════════════════════════════════════════════════")
-        print(f"         🌐 Переклад останньої відповіді ({target_resp.upper()})")
-        print(f"═══════════════════════════════════════════════════════\n")
+        print(f"\n{BLUE_LINE}═══════════════════════════════════════════════════════{RESET}")
+        print(f"         🌐 Translated Agent Response ({target_resp.upper()})")
+        print(f"{BLUE_LINE}───────────────────────────────────────────────────────{RESET}\n")
         print(render_markdown(translated, is_raw_term=False))
-        print("\n───────────────────────────────────────────────────────")
-        print("📋 Скопійовано в буфер обміну!")
+        print(f"\n{YELLOW_LINE}───────────────────────────────────────────────────────{RESET}")
+        print("📋 Copied to clipboard!")
+        print(f"{YELLOW_LINE}═══════════════════════════════════════════════════════{RESET}")
     except Exception as e:
-        print(f"❌ Помилка перекладу: {e}")
+        print(f"❌ Translation error: {e}")
+
+def cmd_agents():
+    """Displays installed and supported AI coding assistants."""
+    agents = detect_installed_agents()
+    print(f"\n{BLUE_LINE}═══════════════════════════════════════════════════════{RESET}")
+    print("           🤖 Supported AI Coding Assistants           ")
+    print(f"{BLUE_LINE}───────────────────────────────────────────────────────{RESET}")
+    for key, info in agents.items():
+        if info["installed"]:
+            status = f"{GREEN}✔ INSTALLED{RESET} ({info['path']})"
+        else:
+            status = f"{RED}✖ Not found in PATH{RESET}"
+        print(f"  • {info['name']:<19} [{info['shpak_cmd']:<10}] : {status}")
+    print(f"{YELLOW_LINE}═══════════════════════════════════════════════════════{RESET}\n")
 
 def cmd_install():
     """Symlinks binaries into ~/.local/bin and verifies PATH."""
@@ -318,29 +351,31 @@ def cmd_update():
     repo_dir = Path(__file__).resolve().parent.parent
     git_dir = repo_dir / ".git"
     if git_dir.exists():
-        print("🔄 Оновлення Shpak через Git...")
+        print("🔄 Updating Shpak via Git...")
         res = subprocess.run(["git", "-C", str(repo_dir), "pull"])
         if res.returncode == 0:
             install_script = repo_dir / "install.sh"
             if install_script.exists():
                 subprocess.run(["bash", str(install_script)])
-            print("✅ Shpak успішно оновлено!")
+            print("✅ Shpak updated successfully!")
         else:
-            print("❌ Помилка git pull.")
+            print("❌ Error executing git pull.")
     else:
         shpak_home = Path.home() / ".shpak"
         if (shpak_home / ".git").exists():
-            print("🔄 Оновлення Shpak в ~/.shpak...")
+            print("🔄 Updating Shpak in ~/.shpak...")
             subprocess.run(["git", "-C", str(shpak_home), "pull"])
             subprocess.run(["bash", str(shpak_home / "install.sh")])
-            print("✅ Shpak успішно оновлено!")
+            print("✅ Shpak updated successfully!")
         else:
-            print("🔄 Завантаження та оновлення останньої версії Shpak...")
+            print("🔄 Downloading and updating latest Shpak release...")
             curl_cmd = "curl -fsSL https://raw.githubusercontent.com/mo0rych0k/shpak/main/install.sh | bash"
             subprocess.run(curl_cmd, shell=True)
 
 def main():
     args = sys.argv[1:]
+    cfg = ensure_onboarding(load_config())
+
     if not args:
         from .tui import run_tui
         run_tui()
@@ -352,7 +387,8 @@ def main():
 Commands:
   (default)             Launch interactive Terminal UI (TUI)
   tui                   Launch interactive Terminal UI (TUI)
-  status                Show active provider, model, hotkeys and prompt status
+  status                Show active provider, model, hotkeys, and agent status
+  agents                List detected and supported AI coding assistants
   install               Install / refresh CLI symlinks into ~/.local/bin
   update                Pull latest updates and reinstall Shpak
   hotkeys [options]     View or change wrapper hotkeys (Ctrl+T, Ctrl+F, Ctrl+R, Ctrl+Y):
@@ -388,6 +424,8 @@ Commands:
         run_tui()
     elif cmd == "status":
         cmd_status()
+    elif cmd in ("agents", "list", "check"):
+        cmd_agents()
     elif cmd in ("install", "setup"):
         cmd_install()
     elif cmd in ("update", "upgrade"):

@@ -1,5 +1,5 @@
 """
-Shpak (Шпак) - Universal Transparent Terminal PTY Wrapper & Technical Prompt/Response Translator for AI Coding Assistants.
+Shpak - Universal Transparent Terminal PTY Wrapper & Technical Prompt/Response Translator for AI Coding Assistants.
 """
 
 __version__ = "3.0.0"

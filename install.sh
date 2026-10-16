@@ -2,15 +2,16 @@
 set -e
 
 # Colors
+BLUE='\033[38;5;39m'
+YELLOW='\033[38;5;220m'
 GREEN='\033[0;32m'
 CYAN='\033[0;36m'
-YELLOW='\033[1;33m'
 BOLD='\033[1m'
 RESET='\033[0m'
 
-echo -e "${CYAN}${BOLD}╔════════════════════════════════════════════════════════════╗${RESET}"
-echo -e "${CYAN}${BOLD}║        🐦 Installing Shpak (Шпак) AI CLI Suite             ║${RESET}"
-echo -e "${CYAN}${BOLD}╚════════════════════════════════════════════════════════════╝${RESET}"
+echo -e "${BLUE}${BOLD}╔════════════════════════════════════════════════════════════╗${RESET}"
+echo -e "${BLUE}${BOLD}║              🐦 Installing Shpak (spk) AI Suite             ║${RESET}"
+echo -e "${YELLOW}${BOLD}╚════════════════════════════════════════════════════════════╝${RESET}"
 
 BIN_DIR="${HOME}/.local/bin"
 mkdir -p "${BIN_DIR}"
@@ -47,9 +48,8 @@ ln -sf agy-shpak "${INSTALL_DIR}/claude-shpak" 2>/dev/null || true
 ln -sf agy-shpak "${INSTALL_DIR}/codex-shpak" 2>/dev/null || true
 ln -sf agy-shpak "${INSTALL_DIR}/cursor-shpak" 2>/dev/null || true
 
-# Backward-compatible links
-ln -sf agy-shpak "${INSTALL_DIR}/ag-tr" 2>/dev/null || true
-ln -sf shpak-cli "${INSTALL_DIR}/tr" 2>/dev/null || true
+# Clean up any obsolete legacy symlinks in installation directory
+rm -f "${INSTALL_DIR}/ag-tr" "${INSTALL_DIR}/tr" "${INSTALL_DIR}/claude-tr" "${INSTALL_DIR}/codex-tr" "${INSTALL_DIR}/cursor-tr" "${INSTALL_DIR}/llm-tr" 2>/dev/null || true
 
 # 3. Symlink to ~/.local/bin
 # Primary short commands:
@@ -66,19 +66,14 @@ ln -sf "${INSTALL_DIR}/agy-shpak" "${BIN_DIR}/claude-shpak"
 ln -sf "${INSTALL_DIR}/agy-shpak" "${BIN_DIR}/codex-shpak"
 ln -sf "${INSTALL_DIR}/agy-shpak" "${BIN_DIR}/cursor-shpak"
 
-# Backward compatibility in PATH
-ln -sf "${INSTALL_DIR}/shpak-cli" "${BIN_DIR}/tr"
-ln -sf "${INSTALL_DIR}/agy-shpak" "${BIN_DIR}/ag-tr"
-ln -sf "${INSTALL_DIR}/agy-shpak" "${BIN_DIR}/claude-tr"
-ln -sf "${INSTALL_DIR}/agy-shpak" "${BIN_DIR}/codex-tr"
-ln -sf "${INSTALL_DIR}/agy-shpak" "${BIN_DIR}/cursor-tr"
-ln -sf "${INSTALL_DIR}/agy-shpak" "${BIN_DIR}/llm-tr"
+# Clean obsolete legacy links in ~/.local/bin
+rm -f "${BIN_DIR}/ag-tr" "${BIN_DIR}/tr" "${BIN_DIR}/claude-tr" "${BIN_DIR}/codex-tr" "${BIN_DIR}/cursor-tr" "${BIN_DIR}/llm-tr" 2>/dev/null || true
 
 echo -e "   ${GREEN}✔ Symlinked spk & shpak to ${BIN_DIR}/spk${RESET}"
-echo -e "   ${GREEN}✔ Symlinked agy-spk (або agy-shpak) to ${BIN_DIR}/agy-spk (Antigravity)${RESET}"
-echo -e "   ${GREEN}✔ Symlinked claude-spk (або claude-shpak) to ${BIN_DIR}/claude-spk (Claude Code)${RESET}"
-echo -e "   ${GREEN}✔ Symlinked codex-spk (або codex-shpak) to ${BIN_DIR}/codex-spk (Codex CLI)${RESET}"
-echo -e "   ${GREEN}✔ Symlinked cursor-spk (або cursor-shpak) to ${BIN_DIR}/cursor-spk (Cursor Agent)${RESET}"
+echo -e "   ${GREEN}✔ Symlinked agy-spk to ${BIN_DIR}/agy-spk (Antigravity)${RESET}"
+echo -e "   ${GREEN}✔ Symlinked claude-spk to ${BIN_DIR}/claude-spk (Claude Code)${RESET}"
+echo -e "   ${GREEN}✔ Symlinked codex-spk to ${BIN_DIR}/codex-spk (Codex CLI)${RESET}"
+echo -e "   ${GREEN}✔ Symlinked cursor-spk to ${BIN_DIR}/cursor-spk (Cursor Agent)${RESET}"
 
 # 4. Check PATH
 if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
@@ -89,18 +84,18 @@ if [[ ":$PATH:" != *":$BIN_DIR:"* ]]; then
 fi
 
 echo ""
-echo -e "${GREEN}🎉 Shpak (spk) успішно встановлено!${RESET}"
-echo -e "────────────────────────────────────────────────────────────"
-echo -e "1. Швидкий запуск AI-асистентів із прозорим перекладом:"
-echo -e "   • ${CYAN}agy-spk${RESET} (або ${CYAN}agy-shpak${RESET})     - Antigravity CLI"
-echo -e "   • ${CYAN}claude-spk${RESET} (або ${CYAN}claude-shpak${RESET})  - Claude Code CLI"
-echo -e "   • ${CYAN}codex-spk${RESET} (або ${CYAN}codex-shpak${RESET})   - OpenAI Codex CLI"
-echo -e "   • ${CYAN}cursor-spk${RESET} (або ${CYAN}cursor-shpak${RESET})  - Cursor Agent CLI"
-echo -e "2. Гарячі клавіші у сесії:"
-echo -e "   • ${CYAN}Ctrl+T${RESET} - Швидкий запит українською -> переклад на EN"
-echo -e "   • ${CYAN}Ctrl+F${RESET} - Структурування у Markdown-промпт"
-echo -e "   • ${CYAN}Ctrl+R${RESET} - Переклад відповіді агента (збереження коду 100%)"
-echo -e "   • ${CYAN}Ctrl+Y${RESET} - Переклад вмісту буфера обміну"
-echo -e "3. Керування та конфігурація: ${CYAN}spk${RESET} (або ${CYAN}shpak${RESET})"
-echo -e "4. Тестовий режим без акаунтів: ${CYAN}agy-spk --demo${RESET} або ${CYAN}spk demo${RESET}"
-echo -e "────────────────────────────────────────────────────────────"
+echo -e "${GREEN}🎉 Shpak (spk) installed successfully!${RESET}"
+echo -e "${BLUE}────────────────────────────────────────────────────────────${RESET}"
+echo -e "1. Quick AI CLI wrappers with transparent translation:"
+echo -e "   • ${CYAN}agy-spk${RESET} (or ${CYAN}agy-shpak${RESET})     - Antigravity CLI"
+echo -e "   • ${CYAN}claude-spk${RESET} (or ${CYAN}claude-shpak${RESET})  - Claude Code CLI"
+echo -e "   • ${CYAN}codex-spk${RESET} (or ${CYAN}codex-shpak${RESET})   - OpenAI Codex CLI"
+echo -e "   • ${CYAN}cursor-spk${RESET} (or ${CYAN}cursor-shpak${RESET})  - Cursor Agent CLI"
+echo -e "2. In-session global hotkeys:"
+echo -e "   • ${CYAN}Ctrl+T${RESET} - Direct Prompt: type in your language -> translates to English"
+echo -e "   • ${CYAN}Ctrl+F${RESET} - Markdown Prompt: structures input into professional brief"
+echo -e "   • ${CYAN}Ctrl+R${RESET} - Translate response (100% code and math preservation)"
+echo -e "   • ${CYAN}Ctrl+Y${RESET} - Translate clipboard content"
+echo -e "3. Management & configuration: run ${CYAN}spk${RESET} (or ${CYAN}shpak${RESET})"
+echo -e "4. Test sandbox without accounts: run ${CYAN}agy-spk --demo${RESET} or ${CYAN}spk demo${RESET}"
+echo -e "${YELLOW}────────────────────────────────────────────────────────────${RESET}"

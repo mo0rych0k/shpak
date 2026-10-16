@@ -395,7 +395,7 @@ def read_translation_line() -> str:
 
             # 1. Cancel on Ctrl+C
             if b"\x03" in ch:
-                os.write(sys.stdout.fileno(), " \033[90m(скасовано)\033[0m\r\n".encode("utf-8"))
+                os.write(sys.stdout.fileno(), " \033[90m(cancelled)\033[0m\r\n".encode("utf-8"))
                 return ""
 
             # 2. Bracketed paste markers (Cmd+V in modern terminals)
@@ -426,7 +426,7 @@ def read_translation_line() -> str:
                         pass
 
                 if ch == b"\x1b":
-                    os.write(sys.stdout.fileno(), " \033[90m(скасовано)\033[0m\r\n".encode("utf-8"))
+                    os.write(sys.stdout.fileno(), " \033[90m(cancelled)\033[0m\r\n".encode("utf-8"))
                     return ""
 
                 if ch in (b"\x1bv", b"\x1bV"):
@@ -491,7 +491,7 @@ def main():
     if cli_args and not cli_args[0].startswith("-"):
         raw_prompt = " ".join(cli_args)
         t_name, m_name = get_translator_info()
-        print(f"🐦 [{display_tag}]: [{t_name}: {m_name}] переклад стартового запиту...")
+        print(f"🐦 [{display_tag}]: [{t_name}: {m_name}] translating initial prompt...")
         initial_translated_prompt = translate_prompt_local(raw_prompt)
         print(f"⚡ [{display_tag} -> EN]: {initial_translated_prompt}\n")
 
@@ -548,10 +548,10 @@ def main():
 
     # Dynamic banner hint
     hint = (
-        f"\r\n\033[90m[{display_tag}]: \033[1;36m{hk_prompt_str.upper()}\033[0;90m — запит | "
+        f"\r\n\033[90m[{display_tag}]: \033[1;36m{hk_prompt_str.upper()}\033[0;90m — Prompt | "
         f"\033[1;35m{hk_prompt_fmt_str.upper()}\033[0;90m — Markdown | "
-        f"\033[1;36m{hk_resp_str.upper()}\033[0;90m — відповідь {app_name} | "
-        f"\033[1;36m{hk_clip_str.upper()}\033[0;90m — буфер\033[0m\r\n"
+        f"\033[1;36m{hk_resp_str.upper()}\033[0;90m — Response | "
+        f"\033[1;36m{hk_clip_str.upper()}\033[0;90m — Clipboard\033[0m\r\n"
     ).encode("utf-8")
     os.write(sys.stdout.fileno(), hint)
 
@@ -593,13 +593,13 @@ def main():
 
                 # 1. Direct Prompt Translation Hotkey (Ctrl+T)
                 if byte_prompt in chunk:
-                    prompt_header = f"\r\n\033[1;36m🐦 [{display_tag} {hk_prompt_str.upper()} Перекладач]:\033[0m ".encode("utf-8")
+                    prompt_header = f"\r\n\033[1;36m🐦 [{display_tag} {hk_prompt_str.upper()} Prompt Translator]:\033[0m ".encode("utf-8")
                     os.write(sys.stdout.fileno(), prompt_header)
 
                     user_text = read_translation_line()
                     if user_text:
                         t_name, m_name = get_translator_info()
-                        os.write(sys.stdout.fileno(), f"\033[90m[{t_name}: {m_name}] переклад...\033[0m\r".encode("utf-8"))
+                        os.write(sys.stdout.fileno(), f"\033[90m[{t_name}: {m_name}] translating prompt...\033[0m\r".encode("utf-8"))
                         try:
                             translated = translate_prompt_local(user_text, mode="prompt")
                             os.write(sys.stdout.fileno(), b"\033[2K\r")
@@ -612,19 +612,19 @@ def main():
                                 paste_payload = f"{translated}\r"
                             os.write(master_fd, paste_payload.encode("utf-8"))
                         except Exception as e:
-                            os.write(sys.stdout.fileno(), f"\r\n\033[31m[Помилка перекладу: {e}]\033[0m\r\n".encode("utf-8"))
+                            os.write(sys.stdout.fileno(), f"\r\n\033[31m[Translation error: {e}]\033[0m\r\n".encode("utf-8"))
                             os.write(master_fd, (user_text + "\r").encode("utf-8"))
                     continue
 
                 # 2. Formatted Markdown Prompt Hotkey (Ctrl+F)
                 if byte_prompt_fmt in chunk:
-                    prompt_header = f"\r\n\033[1;35m📝 [{display_tag} {hk_prompt_fmt_str.upper()} Форматування в Markdown]:\033[0m ".encode("utf-8")
+                    prompt_header = f"\r\n\033[1;35m📝 [{display_tag} {hk_prompt_fmt_str.upper()} Markdown Formatter]:\033[0m ".encode("utf-8")
                     os.write(sys.stdout.fileno(), prompt_header)
 
                     user_text = read_translation_line()
                     if user_text:
                         t_name, m_name = get_translator_info()
-                        os.write(sys.stdout.fileno(), f"\033[90m[{t_name}: {m_name}] форматування Markdown...\033[0m\r".encode("utf-8"))
+                        os.write(sys.stdout.fileno(), f"\033[90m[{t_name}: {m_name}] formatting Markdown...\033[0m\r".encode("utf-8"))
                         try:
                             translated = translate_prompt_local(user_text, mode="prompt_formatted")
                             os.write(sys.stdout.fileno(), b"\033[2K\r")
@@ -634,14 +634,14 @@ def main():
                             paste_payload = f"\033[200~{translated}\033[201~\r"
                             os.write(master_fd, paste_payload.encode("utf-8"))
                         except Exception as e:
-                            os.write(sys.stdout.fileno(), f"\r\n\033[31m[Помилка форматування: {e}]\033[0m\r\n".encode("utf-8"))
+                            os.write(sys.stdout.fileno(), f"\r\n\033[31m[Formatting error: {e}]\033[0m\r\n".encode("utf-8"))
                             os.write(master_fd, (user_text + "\r").encode("utf-8"))
                     continue
 
                 # 3. Response Translation Hotkey (Ctrl+R / Ctrl+U)
                 if byte_resp in chunk or b"\x15" in chunk:
                     t_name, m_name = get_translator_info()
-                    os.write(sys.stdout.fileno(), f"\r\n\033[1;36m🐦 [{display_tag}]:\033[0m \033[90m[{t_name}: {m_name}] переклад відповіді {app_name}...\033[0m\r\n".encode("utf-8"))
+                    os.write(sys.stdout.fileno(), f"\r\n\033[1;36m🐦 [{display_tag}]:\033[0m \033[90m[{t_name}: {m_name}] translating {app_name} response...\033[0m\r\n".encode("utf-8"))
                     try:
                         translated, target_lang = translate_response_local(session_start_time, target_tool=reader_id)
                         if not translated and terminal_screen_buffer:
@@ -656,7 +656,7 @@ def main():
                                     target_lang = cfg.get("languages", {}).get("target_response", "uk")
 
                         if not translated:
-                            os.write(sys.stdout.fileno(), f"\033[33m[{display_tag}]: Відповідей {app_name} в логах сесії ще не знайдено.\033[0m\r\n".encode("utf-8"))
+                            os.write(sys.stdout.fileno(), f"\033[33m[{display_tag}]: No responses from {app_name} found in session logs yet.\033[0m\r\n".encode("utf-8"))
                             continue
 
                         # Store in variable to prevent accidental circular paste
@@ -682,57 +682,58 @@ def main():
                         term_cols = max(40, shutil.get_terminal_size((80, 24)).columns)
                         box_w = min(term_cols - 2, 80)
                         inner_w = box_w - 4
-                        title = f"🐦 [{display_tag}] Переклад відповіді {app_name} ({target_lang.upper()})"
+                        title = f"🐦 [{display_tag}] {app_name} Response ({target_lang.upper()})"
                         title_padded = title + " " * max(0, inner_w - str_display_width(title))
                         top_b = "╔" + "═" * (box_w - 2) + "╗"
                         mid_b = f"║ {title_padded} ║"
                         bot_b = "╚" + "═" * (box_w - 2) + "╝"
-                        header = f"\r\n\033[36m{top_b}\r\n{mid_b}\r\n{bot_b}\033[0m\r\n\r\n"
+                        # Top Blue, Bottom Yellow styling
+                        header = f"\r\n\033[38;5;39m\033[1m{top_b}\r\n{mid_b}\r\n\033[38;5;220m{bot_b}\033[0m\r\n\r\n"
                         os.write(sys.stdout.fileno(), header.encode("utf-8"))
 
                         rendered_body = render_markdown(translated, is_raw_term=True) + "\r\n"
                         os.write(sys.stdout.fileno(), rendered_body.encode("utf-8"))
 
-                        clip_note = "📋 Скопійовано в буфер обміну | " if copy_clip else ""
+                        clip_note = "📋 Copied to clipboard | " if copy_clip else ""
                         footer_div = "─" * min(term_cols - 2, 78)
-                        footer = f"\r\n\033[36m{footer_div}\033[0m\r\n" \
-                                 f"\033[90m{clip_note}Продовжуйте роботу в {app_name}\033[0m\r\n"
+                        footer = f"\r\n\033[38;5;220m\033[1m{footer_div}\033[0m\r\n" \
+                                 f"\033[90m{clip_note}Continue working in {app_name}\033[0m\r\n"
                         os.write(sys.stdout.fileno(), footer.encode("utf-8"))
                     except Exception as e:
-                        os.write(sys.stdout.fileno(), f"\r\n\033[31m[Помилка перекладу відповіді: {e}]\033[0m\r\n".encode("utf-8"))
+                        os.write(sys.stdout.fileno(), f"\r\n\033[31m[Response translation error: {e}]\033[0m\r\n".encode("utf-8"))
                     continue
 
                 # 4. Clipboard Translation Hotkey (Ctrl+Y)
                 if byte_clip in chunk:
                     clip_text = get_clipboard_text().strip()
                     if not clip_text:
-                        os.write(sys.stdout.fileno(), f"\r\n\033[33m[{display_tag}]: Буфер обміну порожній.\033[0m\r\n".encode("utf-8"))
+                        os.write(sys.stdout.fileno(), f"\r\n\033[33m[{display_tag}]: Clipboard is empty.\033[0m\r\n".encode("utf-8"))
                         continue
 
                     # Safety guard: prevent dumping the translated agent response back into the prompt
                     if last_copied_response and clip_text == last_copied_response:
                         os.write(sys.stdout.fileno(), (
-                            f"\r\n\033[33m⚠️  [{display_tag}]: У буфері збережено переклад попередньої відповіді {app_name}, а не запит.\033[0m\r\n"
-                            "\033[90mСкопіюйте потрібне завдання (з браузера чи чату) та спробуйте ще раз.\033[0m\r\n"
+                            f"\r\n\033[33m⚠️  [{display_tag}]: Clipboard contains the previous translated response from {app_name}, not a prompt.\033[0m\r\n"
+                            "\033[90mCopy your intended task (from browser or chat) and try again.\033[0m\r\n"
                         ).encode("utf-8"))
                         continue
 
                     lines_count = len(clip_text.splitlines())
                     if lines_count > 6 or len(clip_text) > 1200:
                         os.write(sys.stdout.fileno(), (
-                            f"\r\n\033[33m⚠️  [{display_tag} Буфер]: Текст містить {lines_count} рядків ({len(clip_text)} симв.).\033[0m\r\n"
-                            f"\033[1;36mНадіслати його як промпт? [y/N]: \033[0m"
+                            f"\r\n\033[33m⚠️  [{display_tag} Clipboard]: Text contains {lines_count} lines ({len(clip_text)} chars).\033[0m\r\n"
+                            f"\033[1;36mSend as prompt? [y/N]: \033[0m"
                         ).encode("utf-8"))
                         confirm_ans = read_translation_line().strip().lower()
-                        if confirm_ans not in ("y", "yes", "так"):
-                            os.write(sys.stdout.fileno(), "\033[90m(скасовано)\033[0m\r\n".encode("utf-8"))
+                        if confirm_ans not in ("y", "yes"):
+                            os.write(sys.stdout.fileno(), "\033[90m(cancelled)\033[0m\r\n".encode("utf-8"))
                             continue
 
                     t_name, m_name = get_translator_info()
                     preview = (clip_text[:50] + "...") if len(clip_text) > 50 else clip_text
                     preview_single = preview.replace("\r", " ").replace("\n", " ")
-                    os.write(sys.stdout.fileno(), f"\r\n\033[1;36m🐦 [{display_tag} Буфер]:\033[0m \033[90m\"{preview_single}\"\033[0m\r\n".encode("utf-8"))
-                    os.write(sys.stdout.fileno(), f"\033[90m[{t_name}: {m_name}] переклад буфера...\033[0m\r".encode("utf-8"))
+                    os.write(sys.stdout.fileno(), f"\r\n\033[1;36m🐦 [{display_tag} Clipboard]:\033[0m \033[90m\"{preview_single}\"\033[0m\r\n".encode("utf-8"))
+                    os.write(sys.stdout.fileno(), f"\033[90m[{t_name}: {m_name}] translating clipboard...\033[0m\r".encode("utf-8"))
 
                     try:
                         translated = translate_prompt_local(clip_text, mode="prompt")
@@ -747,7 +748,7 @@ def main():
                             paste_payload = f"{translated}\r"
                         os.write(master_fd, paste_payload.encode("utf-8"))
                     except Exception as e:
-                        os.write(sys.stdout.fileno(), f"\r\n\033[31m[Помилка перекладу буфера: {e}]\033[0m\r\n".encode("utf-8"))
+                        os.write(sys.stdout.fileno(), f"\r\n\033[31m[Clipboard translation error: {e}]\033[0m\r\n".encode("utf-8"))
                     continue
 
                 # Normal 100% transparent passthrough (all keys, '/', Tab, arrows, ANSI reports)

@@ -1,5 +1,7 @@
 import os
+import sys
 import json
+import shutil
 from pathlib import Path
 
 DEFAULT_PROMPT_TEMPLATE = """You are a technical prompt translator for an AI coding assistant.
@@ -37,7 +39,7 @@ CRITICAL NON-NEGOTIABLE RULES:
 2. CODE & PLACEHOLDER PRESERVATION: NEVER alter, translate, or remove code inside markdown blocks (```...```), inline code (`...`), or placeholders (__CODE_BLOCK_X__, __INLINE_CODE_X__). Keep them exactly in their original locations.
 3. IDENTIFIERS & PATHS: Keep variable names, function names, class names, file paths, git commands, and URLs exactly as-is.
 4. EXACT MARKDOWN REPLICATION: Preserve all headers (#, ##, ###), tables (|), task lists ([ ], [x]), blockquotes and alerts (> [!NOTE], > [!TIP], > [!WARNING]), math formulas ($...$, $$...$$), details/summary tags (<details>, <summary>), and keyboard shortcuts (<kbd>) intact.
-5. TERMINOLOGY: Use established Ukrainian tech terminology where natural (e.g. "розгортання", "перехоплення", "обробник"), but leave industry-standard English terms in context (e.g. "middleware", "endpoint", "pull request", "refactoring").
+5. TERMINOLOGY: Use established technical terminology in the target language where natural, but preserve industry-standard English programming terms in context (e.g. "middleware", "endpoint", "pull request", "refactoring", "token").
 6. PRESERVE MATH & UNICODE LAYOUTS: If mathematical expressions, matrices, ASCII tables, or diagrams are written in Unicode, plain text, or ASCII in the source, DO NOT convert or rewrite them into LaTeX blocks ($$ ... $$) or markdown tables. Keep Unicode math symbols and visual text layouts exactly as-is. If the original text contains LaTeX ($...$, $$...$$), keep the LaTeX equations and symbols strictly intact.
 7. HYPERLINKS: Keep markdown hyperlinks in standard format [text](url) without expanding or duplicating URLs in parentheses.
 8. CLEAN OUTPUT: Return ONLY the complete translated text, without commentary, conversational filler, or introductory notes.
@@ -47,6 +49,7 @@ TEXT TO TRANSLATE:
 
 DEFAULT_CONFIG = {
     "version": "3.0.0",
+    "onboarding_complete": False,
     "active_translator": {
         "provider": "agy-cli",
         "model": "gemini-3.8-flash-low"
@@ -151,3 +154,131 @@ def save_config(cfg: dict, global_config: bool = False):
     path.parent.mkdir(parents=True, exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         json.dump(cfg, f, indent=2, ensure_ascii=False)
+
+def detect_installed_agents() -> dict:
+    """Scans system PATH for supported AI coding assistants."""
+    agents = {
+        "agy": {
+            "name": "Google Antigravity",
+            "cmd": "agy",
+            "shpak_cmd": "agy-spk",
+            "installed": False,
+            "path": None,
+            "desc": "Google AI Pro coding agent"
+        },
+        "claude": {
+            "name": "Claude Code CLI",
+            "cmd": "claude",
+            "shpak_cmd": "claude-spk",
+            "installed": False,
+            "path": None,
+            "desc": "Anthropic Claude Code CLI"
+        },
+        "codex": {
+            "name": "OpenAI Codex CLI",
+            "cmd": "codex",
+            "shpak_cmd": "codex-spk",
+            "installed": False,
+            "path": None,
+            "desc": "OpenAI Codex CLI assistant"
+        },
+        "cursor": {
+            "name": "Cursor Agent",
+            "cmd": "cursor-agent",
+            "shpak_cmd": "cursor-spk",
+            "installed": False,
+            "path": None,
+            "desc": "Cursor terminal coding agent"
+        },
+        "aider": {
+            "name": "Aider",
+            "cmd": "aider",
+            "shpak_cmd": "spk aider",
+            "installed": False,
+            "path": None,
+            "desc": "AI pair programming terminal tool"
+        },
+        "gemini": {
+            "name": "Gemini CLI",
+            "cmd": "gemini",
+            "shpak_cmd": "spk gemini",
+            "installed": False,
+            "path": None,
+            "desc": "Google Gemini CLI"
+        }
+    }
+
+    for key, info in agents.items():
+        found = shutil.which(info["cmd"])
+        if not found and key == "cursor":
+            found = shutil.which("cursor")
+        if found:
+            info["installed"] = True
+            info["path"] = found
+
+    return agents
+
+def ensure_onboarding(cfg: dict, interactive: bool = True) -> dict:
+    """Prompts the user to select their native target language on the very first run."""
+    if cfg.get("onboarding_complete", False):
+        return cfg
+    if not interactive or not sys.stdin.isatty():
+        cfg["onboarding_complete"] = True
+        return cfg
+
+    # Ukrainian top blue, bottom yellow borders
+    BLUE = "\033[38;5;39m\033[1m"
+    YELLOW = "\033[38;5;220m\033[1m"
+    RESET = "\033[0m"
+    BOLD = "\033[1m"
+    GREEN = "\033[32m"
+
+    print(f"\n{BLUE}╔═══════════════════════════════════════════════════════════════╗{RESET}")
+    print(f"{BLUE}║                   🐦 Welcome to Shpak (spk)!                 ║{RESET}")
+    print(f"{YELLOW}╚═══════════════════════════════════════════════════════════════╝{RESET}")
+    print(f"{BOLD}Please select your primary native language for AI agent responses:{RESET}\n")
+
+    popular = [
+        ("uk", "Ukrainian"),
+        ("es", "Spanish"),
+        ("de", "German"),
+        ("fr", "French"),
+        ("pl", "Polish"),
+        ("it", "Italian"),
+        ("ja", "Japanese"),
+        ("zh", "Chinese"),
+        ("pt", "Portuguese"),
+        ("en", "English"),
+    ]
+
+    for idx, (code, name) in enumerate(popular, 1):
+        def_mark = f" {GREEN}(Default){RESET}" if code == "uk" else ""
+        print(f"  [{BOLD}{idx}{RESET}] {code.upper():<4} - {name}{def_mark}")
+    print(f"  [{BOLD}C{RESET}] Other (Enter custom ISO code)\n")
+
+    try:
+        choice = input(f"{BOLD}Select language [1-{len(popular)} or Press Enter for Ukrainian]: {RESET}").strip()
+        if not choice:
+            selected_code = "uk"
+        elif choice.upper() == "C":
+            custom_code = input(f"{BOLD}Enter 2-letter ISO language code (e.g. nl, tr, cs): {RESET}").strip().lower()
+            selected_code = custom_code if custom_code else "uk"
+        else:
+            try:
+                num = int(choice)
+                if 1 <= num <= len(popular):
+                    selected_code = popular[num - 1][0]
+                else:
+                    selected_code = "uk"
+            except ValueError:
+                selected_code = choice.lower() if len(choice) <= 4 else "uk"
+
+        cfg.setdefault("languages", {})["target_response"] = selected_code
+        cfg["onboarding_complete"] = True
+        save_config(cfg)
+        print(f"\n{GREEN}✔ Target language set to: {selected_code.upper()}! (You can change it anytime via 'spk config --lang <code>'){RESET}\n")
+    except (KeyboardInterrupt, EOFError):
+        cfg["onboarding_complete"] = True
+        save_config(cfg)
+
+    return cfg
