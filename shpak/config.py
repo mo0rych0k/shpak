@@ -48,7 +48,7 @@ TEXT TO TRANSLATE:
 {text}"""
 
 DEFAULT_CONFIG = {
-    "version": "3.0.0",
+    "version": "3.0.1",
     "onboarding_complete": False,
     "active_translator": {
         "provider": "agy-cli",

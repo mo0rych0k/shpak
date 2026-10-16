@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "shpak"
-version = "3.0.0"
+version = "3.0.1"
 description = "Universal Transparent Terminal PTY Wrapper & Technical Prompt/Response Translator for AI Coding Assistants (Zero API Keys)"
 readme = "README.md"
 requires-python = ">=3.9"

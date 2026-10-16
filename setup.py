@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="shpak",
-    version="3.0.0",
+    version="3.0.1",
     description="Zero-token transparent PTY wrapper and prompt translator for AI agents (Antigravity, Claude, Codex, Cursor)",
     author="Sergey Pylypyshko",
     packages=find_packages(),
