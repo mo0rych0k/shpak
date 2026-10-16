@@ -1,5 +1,9 @@
 # 🐦 Shpak (`spk`)
 
+<p align="center">
+  <b>English</b> | <a href="README.uk.md"><b>Українська</b></a>
+</p>
+
 > **Fast, transparent terminal PTY wrapper & technical prompt/response translator for AI coding assistants (Zero API Keys required).**
 
 <p align="center">
