@@ -409,8 +409,10 @@ def menu_launch_wrapper(cfg: dict) -> bool:
             badge = f"{GREEN}✔ INSTALLED{RESET} {GRAY}({ag_info.get('path')}){RESET}"
         else:
             badge = f"{RED}✖ Not found in PATH{RESET}"
-        print(f"  [{BOLD}{key_idx}{RESET}] {name:<15} ({YELLOW}{shpak_cmd:<10}{RESET}) : {badge}")
+        test_badge = f"{GREEN}[TESTED STABLE]{RESET}" if tool_id == "agy" else f"{YELLOW}[EXPERIMENTAL]{RESET}"
+        print(f"  [{BOLD}{key_idx}{RESET}] {name:<15} ({YELLOW}{shpak_cmd:<10}{RESET}) : {badge} {test_badge}")
 
+    print(f"\n  {YELLOW}⚠️  Note: Shpak is actively verified on Antigravity. Other CLIs are experimental.{RESET}")
     print(f"  [{BOLD}6{RESET}] Universal CLI  ({YELLOW}spk run <cmd>{RESET}) : Wrap any terminal command")
     print(f"  [{BOLD}T{RESET}] Demo Sandbox  ({YELLOW}spk demo{RESET})      : Test hotkeys & features without accounts")
     print(f"\n  [{BOLD}0{RESET}] Back to Main Menu")

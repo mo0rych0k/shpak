@@ -68,7 +68,9 @@ def cmd_status():
             status = f"{GREEN}✔ INSTALLED{RESET} ({info['path']})"
         else:
             status = f"{RED}✖ Not found in PATH{RESET}"
-        print(f"  • {info['name']:<19} [{info['shpak_cmd']:<10}] : {status}")
+        test_badge = f" {GREEN}[TESTED STABLE]{RESET}" if key == "agy" else f" {YELLOW}[EXPERIMENTAL]{RESET}"
+        print(f"  • {info['name']:<19} [{info['shpak_cmd']:<10}] : {status}{test_badge}")
+    print(f"  {YELLOW}ℹ️  Tested & verified on Google Antigravity. Other wrappers are in testing.{RESET}")
     print("───────────────────────────────────────────────────────")
     print("Available CLI Providers (Zero API keys needed!):")
     for name, details in cfg.get("providers", {}).items():
@@ -248,8 +250,10 @@ def cmd_prompt(text: str, raw: bool = False, mode: str = "prompt"):
     target_prompt = cfg.get("languages", {}).get("target_prompt", "en")
     translator = create_translator(cfg)
     label = "formatted Markdown" if mode == "prompt_formatted" else "clean technical"
+    target_prompt = cfg.get("languages", {}).get("target_prompt", "en")
+    prompt_name = get_language_name(target_prompt)
     if not raw:
-        print(f"🔄 Translating to {label} English via {cfg.get('active_translator', {}).get('provider')}...")
+        print(f"🔄 Translating to {label} {prompt_name} ({target_prompt.upper()}) via {cfg.get('active_translator', {}).get('provider')}...")
     try:
         translated = translator.translate(text, source_lang="auto", target_lang=target_prompt, mode=mode)
         if raw:
@@ -278,8 +282,9 @@ def cmd_agent_exec(agent: str, text: str):
         return
     cfg = load_config()
     target_prompt = cfg.get("languages", {}).get("target_prompt", "en")
+    prompt_name = get_language_name(target_prompt)
     translator = create_translator(cfg)
-    print(f"🔄 Translating prompt to {target_prompt.upper()}...")
+    print(f"🔄 Translating prompt to {prompt_name} ({target_prompt.upper()})...")
     try:
         translated = translator.translate(text, source_lang="auto", target_lang=target_prompt, mode="prompt")
         print(f"🚀 Passing translated prompt to {agent}:")
@@ -301,7 +306,8 @@ def cmd_clip():
 
         cfg = load_config()
         target_resp = cfg.get("languages", {}).get("target_response", "uk")
-        print(f"📋 Translating clipboard content to {target_resp.upper()}...")
+        resp_name = get_language_name(target_resp)
+        print(f"📋 Translating clipboard content to {resp_name} ({target_resp.upper()})...")
         translator = create_translator(cfg)
         translated = translator.translate(raw, source_lang="auto", target_lang=target_resp, mode="response")
         print("\nTranslated:")
@@ -316,6 +322,7 @@ def cmd_last():
     from .renderer import render_markdown
     cfg = load_config()
     target_resp = cfg.get("languages", {}).get("target_response", "uk")
+    resp_name = get_language_name(target_resp)
     translator = create_translator(cfg)
     
     print("🔄 Fetching latest agent response...")
@@ -327,7 +334,7 @@ def cmd_last():
     active = cfg.get("active_translator", {})
     t_name = "agy" if "agy" in active.get("provider", "") else ("claude" if "claude" in active.get("provider", "") else active.get("provider", "agy"))
     m_name = active.get("model", "gemini-3.8-flash-low")
-    print(f"🔄 [{t_name}: {m_name}] translating response to {target_resp.upper()}...")
+    print(f"🔄 [{t_name}: {m_name}] translating response to {resp_name} ({target_resp.upper()})...")
     try:
         translated = translator.translate(raw_text, source_lang="auto", target_lang=target_resp, mode="response")
         if sys.platform == "darwin":
@@ -350,16 +357,20 @@ def cmd_last():
 def cmd_agents():
     """Displays installed and supported AI coding assistants."""
     agents = detect_installed_agents()
-    print(f"\n{BLUE_LINE}═══════════════════════════════════════════════════════{RESET}")
-    print("           🤖 Supported AI Coding Assistants           ")
-    print(f"{BLUE_LINE}───────────────────────────────────────────────────────{RESET}")
+    print(f"\n{BLUE_LINE}═══════════════════════════════════════════════════════════════════════{RESET}")
+    print("                 🤖 Supported AI Coding Assistants           ")
+    print(f"{BLUE_LINE}───────────────────────────────────────────────────────────────────────{RESET}")
     for key, info in agents.items():
         if info["installed"]:
             status = f"{GREEN}✔ INSTALLED{RESET} ({info['path']})"
         else:
             status = f"{RED}✖ Not found in PATH{RESET}"
-        print(f"  • {info['name']:<19} [{info['shpak_cmd']:<10}] : {status}")
-    print(f"{YELLOW_LINE}═══════════════════════════════════════════════════════{RESET}\n")
+        test_badge = f"{GREEN}[TESTED STABLE]{RESET}" if key == "agy" else f"{YELLOW}[EXPERIMENTAL / UNTESTED]{RESET}"
+        print(f"  • {info['name']:<19} [{info['shpak_cmd']:<10}] : {status} {test_badge}")
+    print("───────────────────────────────────────────────────────────────────────")
+    print(f"  {YELLOW}⚠️  Note: Shpak is actively tested & verified on Google Antigravity.{RESET}")
+    print(f"     Other wrappers (claude, codex, cursor, aider) are experimental.")
+    print(f"{YELLOW_LINE}═══════════════════════════════════════════════════════════════════════{RESET}\n")
 
 def cmd_install():
     """Symlinks binaries into ~/.local/bin and verifies PATH."""

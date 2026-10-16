@@ -618,13 +618,19 @@ def main():
                     user_text = read_translation_line()
                     if user_text:
                         t_name, m_name = get_translator_info()
-                        os.write(sys.stdout.fileno(), f"\033[90m[{t_name}: {m_name}] translating prompt...\033[0m\r".encode("utf-8"))
+                        prompt_lang = cfg.get("languages", {}).get("target_prompt", "en")
+                        try:
+                            from .translator.base import get_language_name
+                            prompt_lang_name = get_language_name(prompt_lang)
+                        except Exception:
+                            prompt_lang_name = prompt_lang.upper()
+                        os.write(sys.stdout.fileno(), f"\033[90m[{t_name}: {m_name}] translating prompt to {prompt_lang_name} ({prompt_lang.upper()})...\033[0m\r".encode("utf-8"))
                         try:
                             translated = translate_prompt_local(user_text, mode="prompt")
                             os.write(sys.stdout.fileno(), b"\033[2K\r")
-                            marker = f"\033[1;32m⚡ [{display_tag} -> EN]:\033[0m {translated}\r\n".encode("utf-8")
+                            marker = f"\033[1;32m⚡ [{display_tag} -> {prompt_lang.upper()}]:\033[0m {translated}\r\n".encode("utf-8")
                             os.write(sys.stdout.fileno(), marker)
-                            # Inject clean English prompt into child process
+                            # Inject clean prompt into child process
                             if "\n" in translated:
                                 paste_payload = f"\033[200~{translated}\033[201~\r"
                             else:
@@ -643,11 +649,17 @@ def main():
                     user_text = read_translation_line()
                     if user_text:
                         t_name, m_name = get_translator_info()
-                        os.write(sys.stdout.fileno(), f"\033[90m[{t_name}: {m_name}] formatting Markdown...\033[0m\r".encode("utf-8"))
+                        prompt_lang = cfg.get("languages", {}).get("target_prompt", "en")
+                        try:
+                            from .translator.base import get_language_name
+                            prompt_lang_name = get_language_name(prompt_lang)
+                        except Exception:
+                            prompt_lang_name = prompt_lang.upper()
+                        os.write(sys.stdout.fileno(), f"\033[90m[{t_name}: {m_name}] formatting Markdown prompt in {prompt_lang_name} ({prompt_lang.upper()})...\033[0m\r".encode("utf-8"))
                         try:
                             translated = translate_prompt_local(user_text, mode="prompt_formatted")
                             os.write(sys.stdout.fileno(), b"\033[2K\r")
-                            marker = f"\033[1;35m⚡ [{display_tag} -> Markdown Prompt]:\033[0m\r\n{translated}\r\n".encode("utf-8")
+                            marker = f"\033[1;35m⚡ [{display_tag} -> {prompt_lang.upper()} Markdown Prompt]:\033[0m\r\n{translated}\r\n".encode("utf-8")
                             os.write(sys.stdout.fileno(), marker)
                             # Inject clean formatted prompt into child process with bracketed paste
                             paste_payload = f"\033[200~{translated}\033[201~\r"
@@ -660,7 +672,13 @@ def main():
                 # 3. Response Translation Hotkey (Ctrl+R / Ctrl+U)
                 if byte_resp in chunk or b"\x15" in chunk:
                     t_name, m_name = get_translator_info()
-                    os.write(sys.stdout.fileno(), f"\r\n\033[1;36m🐦 [{display_tag}]:\033[0m \033[90m[{t_name}: {m_name}] translating {app_name} response...\033[0m\r\n".encode("utf-8"))
+                    target_resp = cfg.get("languages", {}).get("target_response", "uk")
+                    try:
+                        from .translator.base import get_language_name
+                        resp_lang_name = get_language_name(target_resp)
+                    except Exception:
+                        resp_lang_name = target_resp.upper()
+                    os.write(sys.stdout.fileno(), f"\r\n\033[1;36m🐦 [{display_tag}]:\033[0m \033[90m[{t_name}: {m_name}] translating {app_name} response to {resp_lang_name} ({target_resp.upper()})...\033[0m\r\n".encode("utf-8"))
                     try:
                         translated, target_lang = translate_response_local(session_start_time, target_tool=reader_id)
                         if not translated and terminal_screen_buffer:
@@ -749,15 +767,21 @@ def main():
                             continue
 
                     t_name, m_name = get_translator_info()
+                    prompt_lang = cfg.get("languages", {}).get("target_prompt", "en")
+                    try:
+                        from .translator.base import get_language_name
+                        prompt_lang_name = get_language_name(prompt_lang)
+                    except Exception:
+                        prompt_lang_name = prompt_lang.upper()
                     preview = (clip_text[:50] + "...") if len(clip_text) > 50 else clip_text
                     preview_single = preview.replace("\r", " ").replace("\n", " ")
                     os.write(sys.stdout.fileno(), f"\r\n\033[1;36m🐦 [{display_tag} Clipboard]:\033[0m \033[90m\"{preview_single}\"\033[0m\r\n".encode("utf-8"))
-                    os.write(sys.stdout.fileno(), f"\033[90m[{t_name}: {m_name}] translating clipboard...\033[0m\r".encode("utf-8"))
+                    os.write(sys.stdout.fileno(), f"\033[90m[{t_name}: {m_name}] translating clipboard to {prompt_lang_name} ({prompt_lang.upper()})...\033[0m\r".encode("utf-8"))
 
                     try:
                         translated = translate_prompt_local(clip_text, mode="prompt")
                         os.write(sys.stdout.fileno(), b"\033[2K\r")
-                        marker = f"\033[1;32m⚡ [{display_tag} -> EN]:\033[0m {translated}\r\n".encode("utf-8")
+                        marker = f"\033[1;32m⚡ [{display_tag} Clipboard -> {prompt_lang.upper()}]:\033[0m {translated}\r\n".encode("utf-8")
                         os.write(sys.stdout.fileno(), marker)
 
                         # Bracketed paste mode so multi-line text doesn't cause rapid Enter presses
