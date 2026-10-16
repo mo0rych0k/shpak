@@ -37,11 +37,14 @@ Shpak надає ультрашвидкі 3-літерні команди (`spk`
 curl -fsSL https://raw.githubusercontent.com/mo0rych0k/shpak/main/install.sh | bash
 ```
 
-### Варіант 2: Homebrew
+### Варіант 2: Homebrew (macOS та Linux)
+```bash
+brew tap mo0rych0k/shpak https://github.com/mo0rych0k/shpak.git
+brew install shpak
+```
+*Або напряму через URL формули:*
 ```bash
 brew install --HEAD https://raw.githubusercontent.com/mo0rych0k/shpak/main/Formula/shpak.rb
-# Або через власний tap (якщо налаштовано):
-# brew install mo0rych0k/tap/shpak
 ```
 
 ### Варіант 3: Сучасний менеджер пакетів Python (`uv` або `pipx`)

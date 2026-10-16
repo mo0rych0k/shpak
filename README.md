@@ -37,11 +37,14 @@ Shpak provides ultra-fast 3-letter commands (`spk`) with full aliases (`shpak`):
 curl -fsSL https://raw.githubusercontent.com/mo0rych0k/shpak/main/install.sh | bash
 ```
 
-### Option 2: Homebrew
+### Option 2: Homebrew (macOS & Linux)
+```bash
+brew tap mo0rych0k/shpak https://github.com/mo0rych0k/shpak.git
+brew install shpak
+```
+*Or directly via URL:*
 ```bash
 brew install --HEAD https://raw.githubusercontent.com/mo0rych0k/shpak/main/Formula/shpak.rb
-# Or via custom tap:
-# brew install mo0rych0k/tap/shpak
 ```
 
 ### Option 3: Modern Python Package Manager (`uv` or `pipx`)
