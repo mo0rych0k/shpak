@@ -303,6 +303,42 @@ def cmd_last():
     except Exception as e:
         print(f"❌ Помилка перекладу: {e}")
 
+def cmd_install():
+    """Symlinks binaries into ~/.local/bin and verifies PATH."""
+    repo_dir = Path(__file__).resolve().parent.parent
+    install_script = repo_dir / "install.sh"
+    if install_script.exists():
+        subprocess.run(["bash", str(install_script)])
+    else:
+        curl_cmd = "curl -fsSL https://raw.githubusercontent.com/mo0rych0k/shpak/main/install.sh | bash"
+        subprocess.run(curl_cmd, shell=True)
+
+def cmd_update():
+    """Pulls latest updates and refreshes symlinks."""
+    repo_dir = Path(__file__).resolve().parent.parent
+    git_dir = repo_dir / ".git"
+    if git_dir.exists():
+        print("🔄 Оновлення Shpak через Git...")
+        res = subprocess.run(["git", "-C", str(repo_dir), "pull"])
+        if res.returncode == 0:
+            install_script = repo_dir / "install.sh"
+            if install_script.exists():
+                subprocess.run(["bash", str(install_script)])
+            print("✅ Shpak успішно оновлено!")
+        else:
+            print("❌ Помилка git pull.")
+    else:
+        shpak_home = Path.home() / ".shpak"
+        if (shpak_home / ".git").exists():
+            print("🔄 Оновлення Shpak в ~/.shpak...")
+            subprocess.run(["git", "-C", str(shpak_home), "pull"])
+            subprocess.run(["bash", str(shpak_home / "install.sh")])
+            print("✅ Shpak успішно оновлено!")
+        else:
+            print("🔄 Завантаження та оновлення останньої версії Shpak...")
+            curl_cmd = "curl -fsSL https://raw.githubusercontent.com/mo0rych0k/shpak/main/install.sh | bash"
+            subprocess.run(curl_cmd, shell=True)
+
 def main():
     args = sys.argv[1:]
     if not args:
@@ -311,12 +347,14 @@ def main():
         return
 
     if args[0] in ("-h", "--help", "help"):
-        print("""Usage: tr [command] [options]
+        print("""Usage: spk [command] [options]  (alias: shpak)
 
 Commands:
   (default)             Launch interactive Terminal UI (TUI)
   tui                   Launch interactive Terminal UI (TUI)
   status                Show active provider, model, hotkeys and prompt status
+  install               Install / refresh CLI symlinks into ~/.local/bin
+  update                Pull latest updates and reinstall Shpak
   hotkeys [options]     View or change wrapper hotkeys (Ctrl+T, Ctrl+F, Ctrl+R, Ctrl+Y):
       --prompt <key>    Change direct prompt hotkey (e.g. ctrl+p)
       --formatted <key> Change formatted Markdown hotkey (e.g. ctrl+g)
@@ -338,6 +376,7 @@ Commands:
   raw "<text>"          Output ONLY the clean translated English string
   last                  Translate the latest response from Antigravity session
   clip                  Translate current clipboard content
+  demo                  Launch interactive zero-account test sandbox
   agy "<prompt>"        Translate prompt to English and run 'agy "<prompt>"'
   claude "<prompt>"     Translate prompt to English and run 'claude "<prompt>"'
 """)
@@ -349,6 +388,10 @@ Commands:
         run_tui()
     elif cmd == "status":
         cmd_status()
+    elif cmd in ("install", "setup"):
+        cmd_install()
+    elif cmd in ("update", "upgrade"):
+        cmd_update()
     elif cmd in ("hotkeys", "hotkey", "keys"):
         cmd_hotkeys(args[1:])
     elif cmd in ("format", "md", "structure"):
