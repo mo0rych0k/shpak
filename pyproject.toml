@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "shpak"
+version = "3.0.0"
+description = "Universal Transparent Terminal PTY Wrapper & Technical Prompt/Response Translator for AI Coding Assistants (Zero API Keys)"
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+    { name = "Sergey Pylypyshko" }
+]
+keywords = [
+    "antigravity",
+    "claude-code",
+    "codex-cli",
+    "translation",
+    "ukrainian",
+    "ai-agent",
+    "pty-wrapper",
+    "codeshield"
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Utilities"
+]
+
+[project.scripts]
+spk = "shpak.cli:main"
+shpak = "shpak.cli:main"
+agy-spk = "shpak.wrapper:main"
+agy-shpak = "shpak.wrapper:main"
+claude-spk = "shpak.wrapper:main"
+claude-shpak = "shpak.wrapper:main"
+codex-spk = "shpak.wrapper:main"
+codex-shpak = "shpak.wrapper:main"
+cursor-spk = "shpak.wrapper:main"
+cursor-shpak = "shpak.wrapper:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["shpak*"]

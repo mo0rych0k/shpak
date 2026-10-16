@@ -1,0 +1,54 @@
+{
+  "version": "3.0.0",
+  "active_translator": {
+    "provider": "agy-cli",
+    "model": "gemini-3.8-flash-low"
+  },
+  "languages": {
+    "target_response": "uk",
+    "target_prompt": "en"
+  },
+  "copy_to_clipboard": true,
+  "hotkeys": {
+    "translate_prompt": "ctrl+t",
+    "translate_prompt_formatted": "ctrl+f",
+    "translate_response": "ctrl+r",
+    "translate_clipboard": "ctrl+y"
+  },
+  "prompts": {
+    "prompt": "You are a technical prompt translator for an AI coding assistant.\nAccurately translate the following developer prompt from {source_lang} to {target_lang}.\n\nRULES:\n1. Output ONLY the clean, translated technical prompt ready for direct execution by the coding agent.\n2. Preserve all code blocks (```), inline code (`), command flags (--flag), paths, variable names, URLs, and technical terms exactly as-is.\n3. Do not add quotes, markdown wrappers, conversational filler, or commentary.\n\nINPUT PROMPT:\n{text}",
+    "prompt_formatted": "You are an expert AI prompt engineer and technical translator.\nTranslate the following user request from {source_lang} to {target_lang} and structure it into a clean, high-quality Markdown prompt for an AI coding assistant.\n\nRULES:\n1. Translate accurately into professional technical English.\n2. Structure the prompt into concise, well-organized Markdown sections:\n   - ## Goal: Clear one-sentence objective\n   - ## Requirements & Context: Specific constraints, technologies, or file targets\n   - ## Key Implementation Steps: Bulleted technical actions\n   - ## Acceptance Criteria: How to verify completion\n3. Preserve all code blocks (```), identifiers, URLs, flags, and technical terms intact.\n4. Output ONLY the resulting Markdown prompt ready to be executed by the coding agent (no conversational preamble or meta-commentary).\n\nINPUT USER REQUEST:\n{text}",
+    "response": "You are an expert technical translator specializing in software engineering, programming, and developer documentation.\nAccurately translate the following agent response from {source_lang} to {target_lang}.\n\nCRITICAL NON-NEGOTIABLE RULES:\n1. STRICT COMPLETENESS & ZERO OMISSIONS: You must translate EVERY SINGLE paragraph, sentence, bullet point, table cell, and section from start to finish. You are strictly FORBIDDEN from summarizing, condensing, shortening, skipping, or omitting ANY content under any circumstances. Never use ellipses (...) to abbreviate text. Maintain strict 1-to-1 structural correspondence with the original text.\n2. CODE & PLACEHOLDER PRESERVATION: NEVER alter, translate, or remove code inside markdown blocks (```...```), inline code (`...`), or placeholders (__CODE_BLOCK_X__, __INLINE_CODE_X__). Keep them exactly in their original locations.\n3. IDENTIFIERS & PATHS: Keep variable names, function names, class names, file paths, git commands, and URLs exactly as-is.\n4. EXACT MARKDOWN REPLICATION: Preserve all headers (#, ##, ###), tables (|), task lists ([ ], [x]), blockquotes and alerts (> [!NOTE], > [!TIP], > [!WARNING]), math formulas ($...$, $$...$$), details/summary tags (<details>, <summary>), and keyboard shortcuts (<kbd>) intact.\n5. TERMINOLOGY: Use established Ukrainian tech terminology where natural (e.g. \"розгортання\", \"перехоплення\", \"обробник\"), but leave industry-standard English terms in context (e.g. \"middleware\", \"endpoint\", \"pull request\", \"refactoring\").\n6. PRESERVE MATH & UNICODE LAYOUTS: If mathematical expressions, matrices, ASCII tables, or diagrams are written in Unicode, plain text, or ASCII in the source, DO NOT convert or rewrite them into LaTeX blocks ($$ ... $$) or markdown tables. Keep Unicode math symbols and visual text layouts exactly as-is. If the original text contains LaTeX ($...$, $$...$$), keep the LaTeX equations and symbols strictly intact.\n7. HYPERLINKS: Keep markdown hyperlinks in standard format [text](url) without expanding or duplicating URLs in parentheses.\n8. CLEAN OUTPUT: Return ONLY the complete translated text, without commentary, conversational filler, or introductory notes.\n\nTEXT TO TRANSLATE:\n{text}"
+  },
+  "providers": {
+    "agy-cli": {
+      "type": "cli_subscription",
+      "cli_tool": "agy",
+      "default_model": "gemini-3.8-flash-low",
+      "models": [
+        "gemini-3.8-flash-low",
+        "gemini-3.8-flash-medium",
+        "gemini-3.8-flash-high",
+        "claude-sonnet-5-5-low",
+        "claude-sonnet-5-5-medium",
+        "claude-sonnet-5-5-high",
+        "claude-opus-5-5-low",
+        "claude-opus-5-5-medium",
+        "claude-opus-5-5-high",
+        "gpt-oss-120b-medium"
+      ],
+      "description": "Antigravity CLI via active Google AI Pro subscription (Zero API keys needed!)"
+    },
+    "claude-cli": {
+      "type": "cli_subscription",
+      "cli_tool": "claude",
+      "default_model": "haiku",
+      "models": [
+        "haiku",
+        "sonnet",
+        "opus"
+      ],
+      "description": "Claude Code CLI via active Claude subscription (Zero API keys needed!)"
+    }
+  }
+}
