@@ -5,20 +5,21 @@ class Shpak < Formula
   head "https://github.com/mo0rych0k/shpak.git", branch: "main"
   license "MIT"
 
-  depends_on "python@3.10"
+  uses_from_macos "python"
 
   def install
-    bin.install "shpak-cli" => "spk"
-    bin.install_symlink bin/"spk" => "shpak"
-    bin.install "agy-shpak" => "agy-spk"
-    bin.install_symlink bin/"agy-spk" => "agy-shpak"
-    bin.install_symlink bin/"agy-spk" => "claude-spk"
-    bin.install_symlink bin/"agy-spk" => "claude-shpak"
-    bin.install_symlink bin/"agy-spk" => "codex-spk"
-    bin.install_symlink bin/"agy-spk" => "codex-shpak"
-    bin.install_symlink bin/"agy-spk" => "cursor-spk"
-    bin.install_symlink bin/"agy-spk" => "cursor-shpak"
-    prefix.install Dir["*"]
+    libexec.install Dir["*"]
+
+    bin.install_symlink libexec/"shpak-cli" => "spk"
+    bin.install_symlink libexec/"shpak-cli" => "shpak"
+    bin.install_symlink libexec/"agy-shpak" => "agy-spk"
+    bin.install_symlink libexec/"agy-shpak" => "agy-shpak"
+    bin.install_symlink libexec/"agy-shpak" => "claude-spk"
+    bin.install_symlink libexec/"agy-shpak" => "claude-shpak"
+    bin.install_symlink libexec/"agy-shpak" => "codex-spk"
+    bin.install_symlink libexec/"agy-shpak" => "codex-shpak"
+    bin.install_symlink libexec/"agy-shpak" => "cursor-spk"
+    bin.install_symlink libexec/"agy-shpak" => "cursor-shpak"
   end
 
   test do
