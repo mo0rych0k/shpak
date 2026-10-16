@@ -2,6 +2,10 @@
 
 > **Fast, transparent terminal PTY wrapper & technical prompt/response translator for AI coding assistants (Zero API Keys required).**
 
+<p align="center">
+  <img src="assets/shpak-tui.png" alt="Shpak Interactive TUI Control Center" width="750">
+</p>
+
 Like the **starling (Шпак)** bird, renowned for its incredible ability to mimic and master any voice or sound, **Shpak** allows developers worldwide to interact with terminal AI coding agents in their native language while guaranteeing 100% technical accuracy, flawless syntax preservation, and a completely native terminal experience.
 
 Operates **without paid API keys**, routing translations through your existing active subscriptions (Google AI Pro via `agy` or Claude Pro via `claude`).
@@ -145,19 +149,31 @@ spk demo
 
 ## 🛠️ Control Center (`spk`)
 
-Launch the interactive management console:
+Launch the unified interactive management console at any time by typing:
 ```bash
 spk
 ```
 
-Features:
-- **Switch translation provider**: `agy-cli` (Google AI Pro) or `claude-cli` (Claude Pro).
-- **Model selector**: `gemini-3.8-flash-low`, `haiku`, `sonnet`, etc.
-- **Language configuration**: Ukrainian, Spanish, German, French, Polish, Japanese, etc.
-- **Hotkey manager**: customize shortcut keys (`spk hotkeys`).
-- **Prompt rules editor**: edit system prompts for direct and Markdown translation (`spk rules`).
-- **Agent launcher**: view detected agents and launch immediately.
-- **Auto-updater**: pull updates via `spk update`.
+<p align="center">
+  <img src="assets/shpak-tui.png" alt="Shpak TUI Control Center Menu" width="700">
+</p>
+
+The TUI provides real-time visibility into your translation environment without editing config files manually:
+
+* **Live Status Header**: Displays the current translator backend (`agy-cli` / `claude-cli`), active model (`gemini-3.8-flash-low`, `haiku`, etc.), prompt auto-translation state (`ON`/`OFF`), source/target languages, proxy port, and registered hotkeys.
+* **Configuration Menu `[1-6]`**:
+  * `[1]` Toggle active agent between Google Antigravity and Claude Code.
+  * `[2]` Select translation model profile (fast latency vs deep reasoning).
+  * `[3]` Change target response language (`UK`, `PL`, `DE`, `ES`, `FR`, `IT`, `JA`, `EN`, or custom ISO code).
+  * `[4]` Change prompt translation language.
+  * `[5]` Customize global session hotkeys (`Ctrl+T`, `Ctrl+F`, `Ctrl+R`, `Ctrl+Y`).
+  * `[6]` Fine-tune system prompt engineering rules for technical translations.
+* **Operations & Agents `[7-0]`**:
+  * `[7]` Directly launch your configured AI coding assistant session with transparent translation.
+  * `[8]` Open the **Demo Sandbox** to experiment with prompt & response translation without logging into any CLI tool.
+  * `[9]` Run system diagnostics to discover which AI coding CLIs are installed and on your `$PATH`.
+  * `[U]` Check for and pull updates to the latest Shpak release.
+  * `[0]` Exit safely.
 
 ---
 
@@ -168,6 +184,29 @@ Response translation is safeguarded by **CodeShield**:
 * File paths, identifiers, class names, variable names, and git flags remain intact.
 * Mathematical formulas in KaTeX, LaTeX display blocks, and ASCII/Unicode math matrices retain exact visual structure.
 * Repeated translation queries return in 0.01s from cache.
+
+---
+
+## 🗑️ Uninstallation
+
+To remove Shpak completely from your system (including binaries, configuration, and cache for a 100% clean reset):
+
+### Quick One-Liner
+```bash
+curl -fsSL https://raw.githubusercontent.com/mo0rych0k/shpak/main/uninstall.sh | bash
+```
+
+### Or Manual Wipe
+```bash
+# 1. Remove CLI symlinks
+rm -f ~/.local/bin/spk ~/.local/bin/shpak ~/.local/bin/*-spk ~/.local/bin/*-shpak
+
+# 2. Remove configuration and caches (resets zero-state onboarding)
+rm -rf ~/.config/shpak ~/.config/llm-translate ~/.cache/shpak
+
+# 3. Remove remote cloned repository if installed via curl
+rm -rf ~/.shpak
+```
 
 ---
 

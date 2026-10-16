@@ -37,7 +37,19 @@ rm -f "${BIN_DIR}/cursor-spk" "${BIN_DIR}/cursor-shpak"
 # Legacy
 rm -f "${BIN_DIR}/tr" "${BIN_DIR}/ag-tr" "${BIN_DIR}/claude-tr" "${BIN_DIR}/codex-tr" "${BIN_DIR}/cursor-tr" "${BIN_DIR}/llm-tr"
 
-echo -e "   ${GREEN}✔ Removed symlinks from ~/.local/bin${RESET}"
-echo -e "   ${GREEN}✔ Cleaned up configs and cache${RESET}"
+echo -e "   ${GREEN}✔ Removed CLI symlinks from ~/.local/bin${RESET}"
+
+# 4. Remove remote installation directory (~/.shpak) if installed via curl
+if [ -d "${HOME}/.shpak" ]; then
+    rm -rf "${HOME}/.shpak"
+    echo -e "   ${GREEN}✔ Removed installation directory ~/.shpak${RESET}"
+fi
+
+# 5. Remove configs and cache (resets language selection and onboarding to zero-state)
+rm -rf "${HOME}/.config/shpak" 2>/dev/null || true
+rm -rf "${HOME}/.config/llm-translate" 2>/dev/null || true
+rm -rf "${HOME}/.cache/shpak" 2>/dev/null || true
+
+echo -e "   ${GREEN}✔ Cleaned up configuration (~/.config/shpak) and caches${RESET}"
 echo ""
-echo -e "${GREEN}🎉 Uninstallation complete!${RESET}"
+echo -e "${GREEN}🎉 Shpak has been completely uninstalled!${RESET}"
