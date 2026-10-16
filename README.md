@@ -1,18 +1,24 @@
-# 🐦 Shpak (`spk`)
+# Shpak (`spk`)
 
 <p align="center">
   <b>English</b> | <a href="README.uk.md"><b>Українська</b></a>
 </p>
 
-> **Fast, transparent terminal PTY wrapper & technical prompt/response translator for AI coding assistants (Zero API Keys required).**
+> **Transparent terminal wrapper and technical prompt/response translator for AI coding CLIs (Zero API Keys required).**
 
 <p align="center">
   <img src="assets/shpak-tui.png" alt="Shpak Interactive TUI Control Center" width="750">
 </p>
 
-Like the **starling (Шпак)** bird, renowned for its incredible ability to mimic and master any voice or sound, **Shpak** allows developers worldwide to interact with terminal AI coding agents in their native language while guaranteeing 100% technical accuracy, flawless syntax preservation, and a completely native terminal experience.
+### What is Shpak?
+**Shpak** is a lightweight terminal utility that wraps your AI coding assistant (like `agy`, `claude`, `codex`, or `cursor-agent`) in a transparent pseudo-terminal (PTY). It allows developers to prompt and read agent responses in their native language (Ukrainian, Polish, German, Spanish, French, etc.) while keeping the entire technical prompt and response flow 100% accurate.
 
-Operates **without paid API keys**, routing translations through your existing active subscriptions (Google AI Pro via `agy` or Claude Pro via `claude`).
+### Why use it / What problem does it solve?
+1. **Accurate Code Generation**: AI models produce significantly higher quality code, architecture, and bash commands when prompted in precise technical English. Shpak translates your native prompt to technical English before handing it to the agent.
+2. **Effortless Reading**: Reading complex explanations, logs, and debugging steps in your native language is faster and reduces mental fatigue.
+3. **Zero Code Corruption (CodeShield)**: Fenced code blocks (````...````), inline code (`` `...` ``), file paths, git commands, and math formulas are shielded with AST placeholders and never altered during translation.
+4. **Zero Paid API Keys**: No separate OpenAI, Anthropic, or Google API keys required. Shpak routes translations through your existing active developer subscriptions (`agy` / `claude`).
+5. **Completely Transparent Terminal**: Works inside your native terminal session — tab completion, arrow keys, command history, and slash commands work without lags or glitches.
 
 ---
 
@@ -96,7 +102,7 @@ cd shpak
 On first launch, Shpak presents an interactive setup asking for your primary native language for AI responses:
 
 ```text
-🐦 shpak initial setup
+shpak initial setup
 ─────────────────────────────────────────────────────────────
 Configure target translation languages for AI coding assistants:
 
