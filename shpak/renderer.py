@@ -870,7 +870,7 @@ def render_sequence_diagram(text: str) -> List[str]:
     col_widths = []
     for p in participants:
         lbl = participant_labels.get(p, p)
-        col_widths.append(max(len(lbl) + 4, 12))
+        col_widths.append(max(str_display_width(lbl) + 4, 12))
 
     gap = 4
     col_centers = []
@@ -883,7 +883,7 @@ def render_sequence_diagram(text: str) -> List[str]:
     for idx, p in enumerate(participants):
         w = col_widths[idx]
         lbl = participant_labels[p]
-        pad = w - 2 - len(lbl)
+        pad = w - 2 - str_display_width(lbl)
         pad_l = pad // 2
         pad_r = pad - pad_l
 
@@ -917,12 +917,13 @@ def render_sequence_diagram(text: str) -> List[str]:
 
         row = make_lifeline_row()
         msg_str = msg.strip()
+        disp_msg_w = str_display_width(msg_str)
 
         if c1 < c2:  # left to right
             span = c2 - c1 - 1
-            if len(msg_str) + 2 <= span:
-                pad_l = (span - len(msg_str)) // 2
-                pad_r = span - len(msg_str) - pad_l
+            if disp_msg_w + 2 <= span:
+                pad_l = (span - disp_msg_w) // 2
+                pad_r = span - disp_msg_w - pad_l
                 segment = (arrow_char * max(pad_l - 1, 0)) + f" {msg_str} " + (arrow_char * max(pad_r - 1, 0)) + "►"
             else:
                 segment = msg_str + "►"
@@ -932,9 +933,9 @@ def render_sequence_diagram(text: str) -> List[str]:
                     row[pos] = ch
         else:  # right to left
             span = c1 - c2 - 1
-            if len(msg_str) + 2 <= span:
-                pad_l = (span - len(msg_str)) // 2
-                pad_r = span - len(msg_str) - pad_l
+            if disp_msg_w + 2 <= span:
+                pad_l = (span - disp_msg_w) // 2
+                pad_r = span - disp_msg_w - pad_l
                 segment = "◄" + (arrow_char * max(pad_l - 1, 0)) + f" {msg_str} " + (arrow_char * max(pad_r - 1, 0))
             else:
                 segment = "◄" + msg_str
@@ -948,105 +949,74 @@ def render_sequence_diagram(text: str) -> List[str]:
 
     return out
 
+def extract_box_label(segment: str) -> str:
+    s = segment.strip()
+    m = re.match(r"^[A-Za-z0-9_]+\s*\[(.*)\]$", s)
+    if m:
+        return m.group(1).strip()
+    return s
+
+def render_box_row(labels: List[str]) -> List[str]:
+    if not labels:
+        return []
+
+    inner_widths = []
+    for lbl in labels:
+        dw = str_display_width(lbl)
+        inner_w = max(dw + 4, 18)
+        inner_widths.append(inner_w)
+
+    top_parts = []
+    empty_parts = []
+    mid_parts = []
+    bot_parts = []
+
+    for idx, (lbl, inner_w) in enumerate(zip(labels, inner_widths)):
+        dw = str_display_width(lbl)
+        pad = inner_w - dw
+        pad_l = pad // 2
+        pad_r = pad - pad_l
+
+        top_parts.append("┌" + "─" * inner_w + "┐")
+        empty_parts.append("│" + " " * inner_w + "│")
+        mid_parts.append(("│" + " " * pad_l + lbl + " " * pad_r + "│", idx < len(labels) - 1))
+        bot_parts.append("└" + "─" * inner_w + "┘")
+
+    gap = "   "
+    l_top = gap.join(top_parts)
+    l_empty1 = gap.join(empty_parts)
+    l_mid = ""
+    for m, has_next in mid_parts:
+        if has_next:
+            l_mid += m[:-1] + "├──►"
+        else:
+            l_mid += m
+    l_empty2 = gap.join(empty_parts)
+    l_bot = gap.join(bot_parts)
+
+    return [l_top, l_empty1, l_mid, l_empty2, l_bot]
+
 def render_flowchart(text: str) -> List[str]:
     lines = [l.strip() for l in text.splitlines() if l.strip()]
-    nodes = {}
-    edges = []
+    out = []
 
     for line in lines:
-        if line.startswith("flowchart") or line.startswith("graph"):
+        if not line or line.startswith(("flowchart", "graph", "subgraph", "end", "style", "class", "classDef")):
             continue
-        decl_matches = re.finditer(r'([A-Za-z0-9_]+)\[[\(\"]*([^\]\"]+)[\)\"]*\]', line)
-        for dm in decl_matches:
-            nid = dm.group(1)
-            lbl = dm.group(2).strip()
-            nodes[nid] = lbl
 
-        edge_matches = re.finditer(r'([A-Za-z0-9_]+)\s*(?:\[[^\]]*\])?\s*-->\|?\"?([^\"|]*)\"?\|?\s*([A-Za-z0-9_]+)', line)
-        for em in edge_matches:
-            src, edge_lbl, dst = em.group(1), em.group(2).strip(), em.group(3)
-            if src not in nodes: nodes[src] = src
-            if dst not in nodes: nodes[dst] = dst
-            edges.append((src, edge_lbl, dst))
+        parts = [p.strip() for p in re.split(r"\s*(?:-->|==>|-\.->)\s*", line) if p.strip()]
+        if not parts:
+            continue
 
-    if not nodes or not edges:
+        labels = [extract_box_label(p) for p in parts]
+        row_lines = render_box_row(labels)
+        if out:
+            out.append("")
+            out.append("")
+        out.extend(row_lines)
+
+    if not out:
         return [f"    {l}" for l in lines]
-
-    adj = {}
-    in_degree = {n: 0 for n in nodes}
-    for src, el, dst in edges:
-        if src not in adj: adj[src] = []
-        adj[src].append((dst, el))
-        in_degree[dst] = in_degree.get(dst, 0) + 1
-
-    # Check for multi-lane architecture pattern
-    if len(edges) >= 4 and any(len(adj.get(n, [])) >= 2 for n in adj):
-        client_lbl = nodes.get("Client", "Web / Mobile App")
-        gateway_lbl = nodes.get("Gateway", "API Gateway")
-        auth_lbl = nodes.get("Auth", "Auth Service")
-        backend_lbl = nodes.get("Backend", "Core Engine")
-        db_lbl = nodes.get("DB", '("PostgreSQL DB")')
-        cache_lbl = nodes.get("Cache", '("Redis Cluster")')
-
-        e_client_gw = next((el for s, el, d in edges if s == "Client" or d == "Gateway"), "HTTPS / API")
-        e_gw_auth = next((el for s, el, d in edges if (s == "Gateway" and d == "Auth") or "Auth" in d), "Route")
-        e_gw_back = next((el for s, el, d in edges if (s == "Gateway" and d == "Backend") or "Core" in nodes.get(d,"")), "RPC")
-        e_back_db = next((el for s, el, d in edges if "DB" in d or "Postgre" in nodes.get(d,"")), "Query")
-        e_back_cache = next((el for s, el, d in edges if "Cache" in d or "Redis" in nodes.get(d,"")), "Cache")
-
-        w1 = max(len(client_lbl) + 4, 18)
-        w2 = max(len(gateway_lbl) + 4, 15)
-        w3 = max(len(auth_lbl) + 4, 16)
-        w4 = max(len(db_lbl) + 4, 19)
-        w_be = max(len(backend_lbl) + 4, 16)
-        w_ca = max(len(cache_lbl) + 4, 19)
-
-        pad1_l = (w1 - 2 - len(client_lbl)) // 2
-        pad1_r = w1 - 2 - len(client_lbl) - pad1_l
-        pad2_l = (w2 - 2 - len(gateway_lbl)) // 2
-        pad2_r = w2 - 2 - len(gateway_lbl) - pad2_l
-        pad3_l = (w3 - 2 - len(auth_lbl)) // 2
-        pad3_r = w3 - 2 - len(auth_lbl) - pad3_l
-        pad4_l = (w4 - 2 - len(db_lbl)) // 2
-        pad4_r = w4 - 2 - len(db_lbl) - pad4_l
-
-        padbe_l = (w_be - 2 - len(backend_lbl)) // 2
-        padbe_r = w_be - 2 - len(backend_lbl) - padbe_l
-        padca_l = (w_ca - 2 - len(cache_lbl)) // 2
-        padca_r = w_ca - 2 - len(cache_lbl) - padca_l
-
-        arr1 = f'─"{e_client_gw}"─►'
-        arr2 = f'─"{e_gw_auth}"─►'
-        arr_rpc = f'"{e_gw_back}"'
-        arr_query = f'"{e_back_db}"'
-        arr_cache = f'─"{e_back_cache}"─►'
-
-        lines_out = [
-            f"  ┌{'─'*(w1-2)}┐                ┌{'─'*(w2-2)}┐          ┌{'─'*(w3-2)}┐          ┌{'─'*(w4-2)}┐",
-            f"  │{' '*pad1_l}{client_lbl}{' '*pad1_r}├{arr1}│{' '*pad2_l}{gateway_lbl}{' '*pad2_r}├{arr2}│{' '*pad3_l}{auth_lbl}{' '*pad3_r}│     ┌───►│{' '*pad4_l}{db_lbl}{' '*pad4_r}│",
-            f"  └{'─'*(w1-2)}┘                └───┬────────┘          └──────────────┘  {arr_query} └───────────────────┘",
-            f"                                             │                                      │",
-            f"                                           {arr_rpc}                       ┌────────────┘",
-            f"                                             │                 ┌──────────────┐          ┌───────────────────┐",
-            f"                                             │                 │       ┴      │          │                   │",
-            f"                                             └────────────────►│{' '*padbe_l}{backend_lbl}{' '*padbe_r}├{arr_cache}│{' '*padca_l}{cache_lbl}{' '*padca_r}│",
-            f"                                                               │              │          │                   │",
-            f"                                                               └──────────────┘          └───────────────────┘",
-        ]
-        return lines_out
-
-    # General chain / tree fallback
-    out = []
-    for src, el, dst in edges:
-        s_lbl = nodes.get(src, src)
-        d_lbl = nodes.get(dst, dst)
-        lbl_str = f'─"{el}"─►' if el else '────►'
-        w_s = len(s_lbl) + 4
-        w_d = len(d_lbl) + 4
-        out.append(f"    ┌{'─' * (w_s-2)}┐           ┌{'─' * (w_d-2)}┐")
-        out.append(f"    │ {s_lbl} ├{lbl_str}│ {d_lbl} │")
-        out.append(f"    └{'─' * (w_s-2)}┘           └{'─' * (w_d-2)}┘")
-        out.append("")
     return out
 
 def render_mermaid(text: str) -> List[str]:
