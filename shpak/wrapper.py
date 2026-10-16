@@ -6,12 +6,8 @@ No API keys required - uses active AI subscriptions for translation!
 
 import os
 import sys
-import pty
-import tty
-import termios
 import select
 import signal
-import fcntl
 import json
 import time
 import shutil
@@ -19,6 +15,16 @@ import re
 import subprocess
 import atexit
 from pathlib import Path
+
+# Safe POSIX PTY imports (native on macOS, Linux, and Windows WSL)
+try:
+    import pty
+    import tty
+    import termios
+    import fcntl
+    HAS_POSIX_PTY = True
+except ImportError:
+    HAS_POSIX_PTY = False
 
 ROOT_DIR = str(Path(__file__).resolve().parent.parent)
 if ROOT_DIR not in sys.path:
@@ -44,17 +50,32 @@ HOTKEY_BYTE_MAP = {
 }
 
 def get_clipboard_text() -> str:
-    """Safely extracts current text from clipboard across platforms."""
+    """Safely extracts current text from clipboard across platforms (macOS, Linux Wayland/X11, Windows/WSL)."""
     if sys.platform == "darwin":
         try:
             return subprocess.check_output(["pbpaste"], text=True).strip()
         except Exception:
             return ""
-    elif shutil.which("xclip"):
+    if shutil.which("wl-paste"):
+        try:
+            return subprocess.check_output(["wl-paste", "--no-newline"], text=True).strip()
+        except Exception:
+            pass
+    if shutil.which("xclip"):
         try:
             return subprocess.check_output(["xclip", "-selection", "clipboard", "-o"], text=True).strip()
         except Exception:
-            return ""
+            pass
+    if shutil.which("xsel"):
+        try:
+            return subprocess.check_output(["xsel", "--clipboard", "--output"], text=True).strip()
+        except Exception:
+            pass
+    if shutil.which("powershell.exe"):
+        try:
+            return subprocess.check_output(["powershell.exe", "-NoProfile", "-Command", "Get-Clipboard"], text=True).strip()
+        except Exception:
+            pass
     return ""
 
 def get_translator_info() -> tuple:
@@ -479,6 +500,14 @@ def read_translation_line() -> str:
                 pass
 
 def main():
+    if not HAS_POSIX_PTY:
+        print("\n\033[31m[Shpak Error]\033[0m Native Windows console lacks POSIX PTY/termios support.")
+        print("💡 \033[1;36mRecommended solution for Windows:\033[0m")
+        print("   Run Shpak inside \033[1mWSL (Windows Subsystem for Linux)\033[0m, e.g. Ubuntu:")
+        print("   $ curl -fsSL https://raw.githubusercontent.com/mo0rych0k/shpak/main/install.sh | bash")
+        print("   Both Antigravity and Claude Code officially require WSL for full terminal PTY functionality on Windows.\n")
+        sys.exit(1)
+
     session_start_time = time.time()
 
     sys.path.insert(0, ROOT_DIR)

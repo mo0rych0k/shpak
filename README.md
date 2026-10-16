@@ -62,6 +62,16 @@ cd shpak
 
 ---
 
+## 💻 OS Compatibility
+
+| Operating System | Support Level | Details |
+| :--- | :--- | :--- |
+| 🍏 **macOS** | **100% Native** | Apple Silicon (M1/M2/M3/M4) & Intel. Native BSD PTY & `pbpaste`. |
+| 🐧 **Linux** | **100% Native** | Ubuntu, Debian, Fedora, Arch, etc. Standard POSIX PTY. Supports Wayland (`wl-paste`) & X11 (`xclip` / `xsel`). |
+| 🪟 **Windows** | **Fully Supported via WSL 2** | Runs seamlessly in WSL (e.g. Ubuntu on Windows). Matches official requirements for Antigravity & Claude Code on Windows. |
+
+---
+
 ## 🌍 First-Launch Language Selection
 
 On first launch, Shpak presents an interactive setup asking for your primary native language for AI responses:
