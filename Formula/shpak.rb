@@ -1,8 +1,8 @@
 class Shpak < Formula
   desc "Zero-glitch transparent PTY wrapper & translator for AI coding CLIs (Antigravity, Claude, Codex, Cursor)"
   homepage "https://github.com/mo0rych0k/shpak"
-  url "https://github.com/mo0rych0k/shpak/archive/refs/tags/v3.0.0.tar.gz"
-  sha256 "61c6ab32c832e7f9131fe1e77d39fa6021069f6652aecb4a298aad1eb1adcfcd"
+  url "https://github.com/mo0rych0k/shpak/archive/refs/tags/v3.0.1.tar.gz"
+  sha256 "36a18ccb7186c9cbe53211cdb08ba1af4ba1456da9f8b51579a80f8fee56f3a7"
   head "https://github.com/mo0rych0k/shpak.git", branch: "main"
   license "MIT"
 
