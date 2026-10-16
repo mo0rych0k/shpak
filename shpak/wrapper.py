@@ -502,9 +502,36 @@ def main():
     reader_id = target_info["reader_id"]
     cli_args = list(target_info["args"])
 
+    flags = []
+    positional = []
+    flags_with_val = {
+        "--agent", "--conversation", "--effort", "--input-format", "--json-schema",
+        "--log-file", "--mode", "--model", "--output-format", "--print-timeout",
+        "--project", "--add-dir", "-i", "--prompt-interactive", "-c", "--config"
+    }
+
+    i = 0
+    while i < len(cli_args):
+        arg = cli_args[i]
+        if arg.startswith("--") and "=" in arg:
+            flags.append(arg)
+            i += 1
+        elif arg in flags_with_val:
+            flags.append(arg)
+            if i + 1 < len(cli_args):
+                flags.append(cli_args[i + 1])
+                i += 1
+            i += 1
+        elif arg.startswith("-"):
+            flags.append(arg)
+            i += 1
+        else:
+            positional.append(arg)
+            i += 1
+
     # If initial prompt argument was provided on command line, translate it first
-    if cli_args and not cli_args[0].startswith("-"):
-        raw_prompt = " ".join(cli_args)
+    if positional:
+        raw_prompt = " ".join(positional)
         t_name, m_name = get_translator_info()
         print(f"🐦 [{display_tag}]: [{t_name}: {m_name}] translating initial prompt...")
         initial_translated_prompt = translate_prompt_local(raw_prompt)
@@ -512,11 +539,11 @@ def main():
 
         # Specific CLI flag formatting
         if target_info["tool_id"] in ("agy", "antigravity"):
-            cmd = [target_info["binary"], "-i", initial_translated_prompt]
+            cmd = [target_info["binary"]] + flags + ["-i", initial_translated_prompt]
         else:
-            cmd = [target_info["binary"], initial_translated_prompt]
+            cmd = [target_info["binary"]] + flags + [initial_translated_prompt]
     else:
-        cmd = [target_info["binary"]] + cli_args
+        cmd = [target_info["binary"]] + flags
 
     # Spawn child inside a true POSIX controlling terminal using pty.fork()
     pid, master_fd = pty.fork()

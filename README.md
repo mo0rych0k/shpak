@@ -149,6 +149,19 @@ agy-spk --demo
 spk demo
 ```
 
+### 5. Passing Native CLI Flags (e.g. `--sandbox`, `--continue`, `--model`)
+All native arguments and flags supported by your AI agent pass directly through:
+```bash
+# Launch Antigravity in restricted sandbox mode:
+agy-spk --sandbox
+
+# Launch in sandbox with an initial task:
+agy-spk --sandbox "create an asynchronous web server"
+
+# Continue the previous session:
+agy-spk --continue
+```
+
 ---
 
 ## 🛠️ Control Center (`spk`)
