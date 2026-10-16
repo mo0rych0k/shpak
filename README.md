@@ -67,11 +67,27 @@ cd shpak
 
 ## 💻 OS Compatibility
 
-| Operating System | Support Level | Details |
-| :--- | :--- | :--- |
-| 🍏 **macOS** | **100% Native** | Apple Silicon (M1/M2/M3/M4) & Intel. Native BSD PTY & `pbpaste`. |
-| 🐧 **Linux** | **100% Native** | Ubuntu, Debian, Fedora, Arch, etc. Standard POSIX PTY. Supports Wayland (`wl-paste`) & X11 (`xclip` / `xsel`). |
-| 🪟 **Windows** | **Fully Supported via WSL 2** | Runs seamlessly in WSL (e.g. Ubuntu on Windows). Matches official requirements for Antigravity & Claude Code on Windows. |
+| Operating System | Support Level | Testing Status | Details |
+| :--- | :--- | :---: | :--- |
+| 🍏 **macOS** | **100% Native** | ✔ **Tested** | Apple Silicon (M1/M2/M3/M4) & Intel. Native BSD PTY & `pbpaste`. |
+| 🐧 **Linux** | **100% Native** | ⏳ *Untested* | Ubuntu, Debian, Fedora, Arch, etc. Standard POSIX PTY. Supports Wayland & X11. |
+| 🪟 **Windows** | **Fully Supported via WSL 2** | ⏳ *Untested* | Runs in WSL 2 (matches official Antigravity & Claude Code requirements). |
+
+---
+
+## 🧪 Testing & Verification Status
+
+> [!NOTE]
+> **Active Production Testing**: Currently, Shpak has been thoroughly tested and actively verified **only with Google Antigravity (`agy`)** and **only on macOS** (Apple Silicon).
+>
+> Architecture and code for Linux, Windows (WSL 2), and other coding agents (Claude Code, OpenAI Codex, Cursor Agent) are fully implemented, but have not yet been tested in live day-to-day sessions. Testing contributions and bug reports via GitHub Issues or PRs are very welcome!
+
+| Target Assistant | macOS | Linux | Windows (WSL 2) | Notes |
+| :--- | :---: | :---: | :---: | :--- |
+| **Google Antigravity** (`agy-spk`) | ✔ **Tested** | ⏳ Untested | ⏳ Untested | Verified daily driver |
+| **Claude Code CLI** (`claude-spk`) | ⏳ Untested | ⏳ Untested | ⏳ Untested | Implemented, awaiting live tests |
+| **OpenAI Codex CLI** (`codex-spk`) | ⏳ Untested | ⏳ Untested | ⏳ Untested | Implemented wrapper |
+| **Cursor Agent** (`cursor-spk`) | ⏳ Untested | ⏳ Untested | ⏳ Untested | Implemented wrapper |
 
 ---
 
