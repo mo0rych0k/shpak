@@ -7,7 +7,7 @@
 > **Transparent terminal wrapper and technical prompt/response translator for AI coding CLIs (Zero API Keys required).**
 
 <p align="center">
-  <img src="assets/shpak-tui.png" alt="Shpak Interactive TUI Control Center" width="750">
+  <img src="assets/shpak-demo.gif" alt="Shpak Live Terminal Demo" width="750">
 </p>
 
 ### What is Shpak?

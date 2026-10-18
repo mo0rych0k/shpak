@@ -7,7 +7,7 @@
 > **Прозорий термінальний wrapper та перекладач технічних промптів і відповідей для AI-асистентів кодингу (без платних API-ключів).**
 
 <p align="center">
-  <img src="assets/shpak-tui.png" alt="Shpak Interactive TUI Control Center" width="750">
+  <img src="assets/shpak-demo.gif" alt="Демонстрація роботи Shpak у терміналі" width="750">
 </p>
 
 ### Що таке Shpak?
